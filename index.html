@@ -1,0 +1,333 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Newsdesk Radio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anuphan:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,700&family=JetBrains+Mono:wght@500&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/hls.js/1.5.13/hls.min.js"></script>
+<style>
+/* Layout: masthead with News/Radio switch, filter chips, grouped tiles; radio player bar pinned to bottom across both tabs */
+:root{
+  --bg:#f4f5f7; --paper:#ffffff; --ink:#15171c; --muted:#5f6675; --line:#dfe2e8;
+  --accent:#0b5cad; --accent-soft:#e3eefa; --live:#1f8a4c;
+  --display:"Fraunces",Georgia,serif; --body:"Anuphan",system-ui,sans-serif; --mono:"JetBrains Mono",ui-monospace,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0f1115; --paper:#181b21; --ink:#e9ecf2; --muted:#98a0b0; --line:#2a2f38;
+  --accent:#6aaaf0; --accent-soft:#16263a; --live:#4fd08a; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f1115; --paper:#181b21; --ink:#e9ecf2; --muted:#98a0b0; --line:#2a2f38;
+  --accent:#6aaaf0; --accent-soft:#16263a; --live:#4fd08a; color-scheme:dark}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.5 var(--body)}
+body.playing{padding-bottom:96px}
+.wrap{max-width:1180px;margin:0 auto;padding-inline:max(16px,env(safe-area-inset-left,0px)) max(16px,env(safe-area-inset-right,0px))}
+main.wrap{padding-block:0 60px}
+.mast{border-bottom:3px double var(--line);padding-block:22px 14px;display:flex;justify-content:space-between;align-items:end;gap:16px;flex-wrap:wrap}
+h1{font:700 clamp(30px,5vw,48px)/1 var(--display);margin:0;letter-spacing:-.02em}
+.date{font:500 12px var(--mono);color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+.switch{display:flex;background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:3px}
+.switch a{padding:7px 18px;border-radius:7px;text-decoration:none;color:var(--muted);font-weight:600}
+.switch a[aria-current="page"]{background:var(--accent);color:#fff}
+input,select,button{font:inherit;color:inherit}
+.field{background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:9px 12px;min-width:0;width:100%}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.tools{display:grid;grid-template-columns:2fr 1fr 1fr;gap:10px;margin-top:16px}
+#newsView .tools{grid-template-columns:minmax(0,420px)}
+@media (max-width:640px){.tools{grid-template-columns:1fr 1fr}.tools .field:first-child{grid-column:1/-1}}
+.chips{display:flex;gap:8px;overflow-x:auto;padding-block:12px 4px;scrollbar-width:thin}
+.chip{white-space:nowrap;border:1px solid var(--line);background:transparent;border-radius:999px;padding:5px 13px;cursor:pointer;font-size:14px}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+section{margin-top:22px}
+h2{font:600 13px var(--mono);color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin:0 0 10px;display:flex;gap:8px;align-items:baseline}
+h2 small{font:400 12px var(--body);letter-spacing:0;text-transform:none}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px}
+.tile{position:relative;display:flex;gap:12px;align-items:center;background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:12px 34px 12px 12px;text-decoration:none;color:inherit;min-width:0;cursor:pointer;transition:border-color .15s,transform .15s;text-align:left;width:100%}
+.tile:hover{border-color:var(--accent);transform:translateY(-1px)}
+.tile.on{border-color:var(--accent);background:var(--accent-soft)}
+@media (prefers-reduced-motion:reduce){.tile{transition:none}.tile:hover{transform:none}}
+.logo{width:44px;height:44px;border-radius:10px;flex:none;background:#fff;border:1px solid var(--line);display:grid;place-items:center;overflow:hidden;font:700 15px var(--body);color:#15171c}
+.logo img{width:30px;height:30px;object-fit:contain}
+.logo.big img{width:100%;height:100%;object-fit:cover}
+.meta{min-width:0;flex:1}
+.name{font-weight:600;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.desc{font-size:12.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pin{position:absolute;top:4px;right:4px;background:none;border:0;cursor:pointer;color:var(--muted);font-size:16px;padding:4px 6px;border-radius:6px;opacity:.55}
+.pin:hover,.pin.y{opacity:1}.pin.y{color:var(--accent)}
+.status{font:500 12px var(--mono);color:var(--muted);margin-top:14px}
+.empty{color:var(--muted);text-align:center;padding:40px 0;grid-column:1/-1}
+.bar{position:fixed;left:0;right:0;bottom:0;background:var(--paper);border-top:1px solid var(--line);padding-block:10px calc(10px + env(safe-area-inset-bottom,0px));z-index:5}
+.bar .wrap{display:flex;align-items:center;gap:14px}
+.play{width:46px;height:46px;border-radius:50%;border:0;background:var(--accent);color:#fff;font-size:17px;cursor:pointer;flex:none}
+.now{min-width:0;flex:1}
+.live{color:var(--live);font:500 11px var(--mono);letter-spacing:.06em}
+.live::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:currentColor;margin-right:6px;vertical-align:1px;animation:pulse 1.4s infinite}
+@keyframes pulse{50%{opacity:.25}}
+@media (prefers-reduced-motion:reduce){.live::before{animation:none}}
+.vol{width:120px}
+@media (max-width:520px){.vol{display:none}}
+</style>
+</head>
+<body>
+<header class="wrap mast">
+  <div><div class="date" id="today"></div><h1>Newsdesk</h1></div>
+  <nav class="switch" aria-label="สลับหน้า">
+    <a href="#news" id="tabNews">ข่าว</a>
+    <a href="#radio" id="tabRadio">วิทยุ</a>
+  </nav>
+</header>
+
+<main class="wrap">
+  <!-- ข่าว -->
+  <div id="newsView">
+    <div class="tools"><input class="field" id="nq" type="search" placeholder="ค้นหาสำนักข่าว เช่น BBC, ไทยรัฐ, WHO" aria-label="ค้นหาสำนักข่าว"></div>
+    <div class="chips" id="nchips"></div>
+    <div id="nout"></div>
+  </div>
+
+  <!-- วิทยุ -->
+  <div id="radioView" hidden>
+    <form class="tools" id="rf">
+      <input class="field" id="rq" type="search" placeholder="ค้นหาสถานี แล้วกด Enter เช่น BBC, Jazz, FM 91">
+      <select class="field" id="rcountry" aria-label="ประเทศ"><option value="">ทุกประเทศ</option></select>
+      <select class="field" id="rsort" aria-label="เรียงตาม">
+        <option value="votes">ยอดนิยม</option>
+        <option value="clickcount">ฟังมากสุด</option>
+        <option value="bitrate">คุณภาพเสียงสูง</option>
+        <option value="name">ชื่อ A–Z</option>
+      </select>
+    </form>
+    <div class="chips" id="rchips"></div>
+    <div class="status" id="rstatus"></div>
+    <section><div class="grid" id="rgrid"></div></section>
+  </div>
+</main>
+
+<div class="bar" id="bar" hidden>
+  <div class="wrap">
+    <button class="play" id="play" aria-label="เล่น/หยุด">▶</button>
+    <div class="now"><div class="name" id="nowName"></div><div class="desc" id="nowInfo"></div></div>
+    <input class="vol" id="vol" type="range" min="0" max="1" step="0.01" value="0.8" aria-label="ระดับเสียง">
+  </div>
+</div>
+<audio id="audio" preload="none"></audio>
+
+<script>
+const $=id=>document.getElementById(id);
+const store={get(k,d){try{return JSON.parse(localStorage.getItem(k))??d}catch{return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{}}};
+const esc=t=>String(t??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const mono=n=>esc(String(n).replace(/^The\s+/i,"").trim().slice(0,2).toUpperCase());
+function logoFail(img){ // favicon: Google → DuckDuckGo → อักษรย่อ
+  if(img.dataset.h&&!img.dataset.t){img.dataset.t=1;img.src=`https://icons.duckduckgo.com/ip3/${img.dataset.h}.ico`}
+  else img.parentNode.textContent=img.dataset.m;
+}
+$("today").textContent=new Date().toLocaleDateString("th-TH",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
+
+/* ================= ข่าว: สำนักข่าวที่อ่านได้ฟรี ================= */
+const GROUPS=[
+  ["ไทย","สำนักข่าวในประเทศ",[
+    ["Thai PBS","https://www.thaipbs.or.th/news","สื่อสาธารณะ"],
+    ["ไทยรัฐ","https://www.thairath.co.th","ข่าวทั่วไป"],
+    ["มติชน","https://www.matichon.co.th","การเมือง สังคม"],
+    ["ข่าวสด","https://www.khaosod.co.th","ข่าวทั่วไป"],
+    ["เดลินิวส์","https://www.dailynews.co.th","ข่าวทั่วไป"],
+    ["THE STANDARD","https://thestandard.co","ข่าว & วิเคราะห์"],
+    ["กรุงเทพธุรกิจ","https://www.bangkokbiznews.com","ธุรกิจ เศรษฐกิจ"],
+    ["ประชาชาติธุรกิจ","https://www.prachachat.net","ธุรกิจ เศรษฐกิจ"],
+    ["PPTV","https://www.pptvhd36.com/news","ข่าวทีวี"],
+    ["BBC ไทย","https://www.bbc.com/thai","ข่าวต่างประเทศภาษาไทย"],
+    ["Bangkok Post","https://www.bangkokpost.com","English daily"],
+    ["The Nation","https://www.nationthailand.com","English daily"],
+  ]],
+  ["โลก","สำนักข่าวต่างประเทศ",[
+    ["BBC News","https://www.bbc.com/news","UK · World"],
+    ["CNN","https://edition.cnn.com","US · World"],
+    ["Reuters","https://www.reuters.com","สำนักข่าวโลก"],
+    ["AP News","https://apnews.com","สำนักข่าวโลก"],
+    ["Al Jazeera","https://www.aljazeera.com","Qatar · World"],
+    ["The Guardian","https://www.theguardian.com/international","UK · World"],
+    ["NPR","https://www.npr.org","US public radio"],
+    ["Sky News","https://news.sky.com","UK"],
+    ["DW","https://www.dw.com/en","Germany"],
+    ["France 24","https://www.france24.com/en","France"],
+    ["The Independent","https://www.independent.co.uk","UK"],
+    ["NBC News","https://www.nbcnews.com","US"],
+    ["ABC News","https://abcnews.go.com","US"],
+    ["CBS News","https://www.cbsnews.com","US"],
+  ]],
+  ["เอเชีย","ข่าวเอเชียและภูมิภาค",[
+    ["NHK World","https://www3.nhk.or.jp/nhkworld/","Japan"],
+    ["CNA","https://www.channelnewsasia.com","Singapore"],
+    ["The Korea Herald","https://www.koreaherald.com","Korea"],
+    ["The Diplomat","https://thediplomat.com","Asia-Pacific analysis"],
+  ]],
+  ["ธุรกิจ","การเงิน เศรษฐกิจ ตลาด",[
+    ["CNBC","https://www.cnbc.com","Markets"],
+    ["Yahoo Finance","https://finance.yahoo.com","Markets & quotes"],
+    ["Investing.com","https://www.investing.com","Markets & calendar"],
+  ]],
+  ["เทคโนโลยี","ข่าวไอทีและเทคโนโลยี",[
+    ["The Verge","https://www.theverge.com","Tech & culture"],
+    ["TechCrunch","https://techcrunch.com","Startups"],
+    ["Ars Technica","https://arstechnica.com","Tech in depth"],
+    ["Blognone","https://www.blognone.com","ไอทีภาษาไทย"],
+  ]],
+  ["การแพทย์","สุขภาพ การแพทย์ และความปลอดภัยผู้ป่วย",[
+    ["WHO News","https://www.who.int/news","องค์การอนามัยโลก"],
+    ["STAT","https://www.statnews.com","Health & medicine"],
+    ["Medical Xpress","https://medicalxpress.com","Medical research news"],
+    ["NIH News","https://www.nih.gov/news-events/news-releases","US research"],
+    ["APSF","https://www.apsf.org","Anesthesia patient safety"],
+    ["ISMP","https://www.ismp.org","Medication safety"],
+    ["CDC","https://www.cdc.gov","US public health"],
+    ["กรมควบคุมโรค","https://ddc.moph.go.th","ข่าวโรคและการระบาด"],
+    ["สรพ. (HA)","https://www.ha.or.th","รับรองคุณภาพ รพ."],
+    ["Hfocus","https://www.hfocus.org","ข่าวระบบสุขภาพไทย"],
+  ]],
+];
+const NEWS=GROUPS.flatMap(([g,,items])=>items.map(([name,url,desc])=>({name,url,desc,g})));
+let pins=store.get("nd_pins",[]), nfilter=store.get("nd_filter","all");
+if(!["all","pins",...GROUPS.map(g=>g[0])].includes(nfilter))nfilter="all";
+
+function newsTile(o){
+  const pinned=pins.includes(o.name), h=new URL(o.url).hostname;
+  return `<a class="tile" href="${esc(o.url)}" target="_blank" rel="noopener">
+    <span class="logo"><img src="https://www.google.com/s2/favicons?domain=${h}&sz=128" alt="" loading="lazy" data-h="${h}" data-m="${mono(o.name)}" onerror="logoFail(this)"></span>
+    <span class="meta"><div class="name">${esc(o.name)}</div><div class="desc">${esc(o.desc)}</div></span>
+    <button class="pin npin ${pinned?"y":""}" type="button" data-n="${esc(o.name)}" aria-label="ปักหมุด ${esc(o.name)}">${pinned?"★":"☆"}</button></a>`;
+}
+function renderNews(){
+  const opts=[["all","ทั้งหมด"],["pins",`★ ปักหมุด (${pins.length})`],...GROUPS.map(g=>[g[0],g[0]])];
+  $("nchips").innerHTML=opts.map(([v,l])=>`<button class="chip nchip" type="button" data-f="${v}" aria-pressed="${nfilter===v}">${l}</button>`).join("");
+  const q=$("nq").value.trim().toLowerCase();
+  const match=o=>!q||(o.name+" "+o.desc+" "+o.url).toLowerCase().includes(q);
+  let html="";
+  const pinned=NEWS.filter(o=>pins.includes(o.name)&&match(o));
+  if((nfilter==="all"||nfilter==="pins")&&pinned.length)html+=`<section><h2>★ ปักหมุด</h2><div class="grid">${pinned.map(newsTile).join("")}</div></section>`;
+  if(nfilter==="pins"&&!pinned.length)html+=`<p class="empty">ยังไม่มีสำนักข่าวที่ปักหมุด กด ☆ ที่มุมการ์ดเพื่อเก็บไว้ด้านบน</p>`;
+  if(nfilter!=="pins")GROUPS.forEach(([g,sub])=>{
+    if(nfilter!=="all"&&nfilter!==g)return;
+    const items=NEWS.filter(o=>o.g===g&&match(o));
+    if(items.length)html+=`<section><h2>${g} <small>${sub} · ${items.length}</small></h2><div class="grid">${items.map(newsTile).join("")}</div></section>`;
+  });
+  $("nout").innerHTML=html||`<p class="empty">ไม่พบสำนักข่าวที่ตรงกับ “${esc(q)}”</p>`;
+}
+$("nq").addEventListener("input",renderNews);
+
+/* ================= วิทยุ: Radio Browser API ================= */
+const SERVERS=["de1","de2","fi1","nl1","at1"].map(s=>`https://${s}.api.radio-browser.info`);
+const TAGS=[["","ทั้งหมด"],["news","ข่าว"],["pop","Pop"],["jazz","Jazz"],["classical","Classical"],["rock","Rock"],["lofi","Lo-fi"],["talk","Talk"],["thai","ไทย"],["kpop","K-pop"],["ambient","Ambient"]];
+let API=null, hls=null, current=null, rview="all", rtag="", radioReady=false, lastList=[];
+let favs=store.get("sw_favs",{});
+const audio=$("audio");
+
+async function api(path){
+  const order=API?[API,...SERVERS.filter(s=>s!==API)]:[...SERVERS].sort(()=>Math.random()-.5);
+  for(const s of order){
+    try{const ctl=new AbortController(),t=setTimeout(()=>ctl.abort(),8000);
+      const r=await fetch(s+path,{signal:ctl.signal});clearTimeout(t);
+      if(!r.ok)throw 0;API=s;return await r.json()}catch{}
+  }
+  throw new Error("เชื่อมต่อฐานข้อมูลวิทยุไม่ได้ ตรวจสอบอินเทอร์เน็ตแล้วลองใหม่");
+}
+function renderRChips(){
+  const b=[[`fav`,`★ สถานีโปรด (${Object.keys(favs).length})`,rview==="fav"],...TAGS.map(([t,l])=>[t,l,rview==="all"&&rtag===t])];
+  $("rchips").innerHTML=b.map(([v,l,on])=>`<button class="chip rchip" type="button" data-t="${v}" aria-pressed="${on}">${l}</button>`).join("");
+}
+async function loadCountries(){
+  try{
+    const list=await api("/json/countries?hidebroken=true");
+    const sel=$("rcountry");
+    list.filter(c=>c.stationcount>5&&c.iso_3166_1).sort((a,b)=>a.name.localeCompare(b.name)).forEach(c=>{
+      const o=document.createElement("option");o.value=c.iso_3166_1;o.textContent=`${c.name} (${c.stationcount})`;sel.appendChild(o)});
+    sel.value=store.get("sw_country","TH");
+  }catch{}
+}
+async function searchRadio(){
+  rview="all";renderRChips();
+  const sort=$("rsort").value;
+  const p=new URLSearchParams({limit:"60",hidebroken:"true",order:sort,reverse:sort!=="name"?"true":"false"});
+  if($("rq").value.trim())p.set("name",$("rq").value.trim());
+  if($("rcountry").value)p.set("countrycode",$("rcountry").value);
+  if(rtag)p.set("tag",rtag);
+  store.set("sw_country",$("rcountry").value);
+  $("rstatus").textContent="กำลังค้นหา…";
+  try{const list=await api("/json/stations/search?"+p);
+    $("rstatus").textContent=`พบ ${list.length} สถานี`+(list.length===60?" · แสดง 60 อันดับแรก":"");renderStations(list)}
+  catch(e){$("rstatus").textContent=e.message;renderStations([])}
+}
+function showFavs(){
+  rview="fav";renderRChips();
+  const list=Object.values(favs);$("rstatus").textContent=`สถานีโปรด ${list.length} สถานี`;
+  renderStations(list,"ยังไม่มีสถานีโปรด กด ☆ ที่มุมการ์ดเพื่อบันทึก");
+}
+function renderStations(list,emptyMsg="ไม่พบสถานี ลองเปลี่ยนคำค้นหรือประเทศ"){
+  lastList=list;
+  if(!list.length){$("rgrid").innerHTML=`<div class="empty">${emptyMsg}</div>`;return}
+  $("rgrid").innerHTML=list.map((s,i)=>{
+    const tags=(s.tags||"").split(",").filter(Boolean).slice(0,2).join(" · ");
+    const fav=!!favs[s.stationuuid];
+    const logo=/^https?:\/\//.test(s.favicon||"")?`<img src="${esc(s.favicon)}" alt="" loading="lazy" data-m="${mono(s.name)}" onerror="logoFail(this)">`:mono(s.name);
+    return `<div class="tile ${current&&current.stationuuid===s.stationuuid?"on":""}" role="button" tabindex="0" data-i="${i}">
+      <span class="logo big">${logo}</span>
+      <span class="meta"><div class="name">${esc(s.name.trim())}</div><div class="desc">${esc([s.country,tags,s.bitrate?s.bitrate+" kbps":""].filter(Boolean).join(" · "))}</div></span>
+      <button class="pin rpin ${fav?"y":""}" type="button" data-i="${i}" aria-label="สถานีโปรด">${fav?"★":"☆"}</button></div>`;
+  }).join("");
+}
+function playStation(s){
+  current=s;const url=s.url_resolved||s.url;
+  if(hls){hls.destroy();hls=null}
+  if((s.hls==1||/\.m3u8(\?|$)/i.test(url))&&window.Hls&&Hls.isSupported()){hls=new Hls();hls.loadSource(url);hls.attachMedia(audio)}
+  else audio.src=url;
+  audio.play().catch(()=>setInfo("สถานีนี้เล่นไม่ได้ในขณะนี้ ลองสถานีอื่น"));
+  $("bar").hidden=false;document.body.classList.add("playing");
+  $("nowName").textContent=s.name.trim();setInfo("กำลังเชื่อมต่อ…");
+  document.querySelectorAll("#rgrid .tile").forEach(el=>el.classList.toggle("on",lastList[el.dataset.i]?.stationuuid===s.stationuuid));
+  api("/json/url/"+s.stationuuid).catch(()=>{});
+  if("mediaSession" in navigator)navigator.mediaSession.metadata=new MediaMetadata({title:s.name,artist:s.country||"",artwork:s.favicon?[{src:s.favicon}]:[]});
+}
+function setInfo(t,live){$("nowInfo").textContent=t;$("nowInfo").className="desc"+(live?" live":"")}
+audio.addEventListener("playing",()=>{$("play").textContent="❚❚";setInfo("ON AIR · "+[current.country,current.bitrate?current.bitrate+" kbps":""].filter(Boolean).join(" · "),true)});
+audio.addEventListener("pause",()=>{$("play").textContent="▶";if(current)setInfo("หยุดชั่วคราว")});
+audio.addEventListener("waiting",()=>setInfo("กำลังบัฟเฟอร์…"));
+audio.addEventListener("error",()=>{if(current)setInfo("สตรีมขัดข้อง ลองสถานีอื่น")});
+$("play").onclick=()=>audio.paused?playStation(current):audio.pause();
+$("vol").oninput=e=>{audio.volume=e.target.value;store.set("sw_vol",e.target.value)};
+audio.volume=$("vol").value=store.get("sw_vol",0.8);
+$("rf").onsubmit=e=>{e.preventDefault();rtag="";searchRadio()};
+$("rcountry").onchange=searchRadio;$("rsort").onchange=searchRadio;
+$("rgrid").addEventListener("keydown",e=>{const t=e.target.closest(".tile");if(t&&(e.key==="Enter"||e.key===" ")){e.preventDefault();playStation(lastList[t.dataset.i])}});
+async function initRadio(){if(radioReady)return;radioReady=true;renderRChips();await loadCountries();searchRadio()}
+
+/* ================= คลิกรวม + สลับหน้า ================= */
+document.addEventListener("click",e=>{
+  const np=e.target.closest(".npin");
+  if(np){e.preventDefault();e.stopPropagation();const n=np.dataset.n;pins=pins.includes(n)?pins.filter(x=>x!==n):[...pins,n];store.set("nd_pins",pins);renderNews();return}
+  const nc=e.target.closest(".nchip");
+  if(nc){nfilter=nc.dataset.f;store.set("nd_filter",nfilter);renderNews();return}
+  const rp=e.target.closest(".rpin");
+  if(rp){e.stopPropagation();const s=lastList[rp.dataset.i];
+    if(favs[s.stationuuid])delete favs[s.stationuuid];
+    else favs[s.stationuuid]={stationuuid:s.stationuuid,name:s.name,url_resolved:s.url_resolved,url:s.url,favicon:s.favicon,country:s.country,tags:s.tags,bitrate:s.bitrate,hls:s.hls};
+    store.set("sw_favs",favs);rview==="fav"?showFavs():(renderRChips(),renderStations(lastList));return}
+  const rc=e.target.closest(".rchip");
+  if(rc){if(rc.dataset.t==="fav")showFavs();else{rtag=rc.dataset.t;searchRadio()}return}
+  const rt=e.target.closest("#rgrid .tile");
+  if(rt)playStation(lastList[rt.dataset.i]);
+});
+function route(){
+  const radio=location.hash==="#radio";
+  $("newsView").hidden=radio;$("radioView").hidden=!radio;
+  $("tabNews").toggleAttribute("aria-current",!radio);$("tabRadio").toggleAttribute("aria-current",radio);
+  if(!radio)$("tabNews").setAttribute("aria-current","page");else $("tabRadio").setAttribute("aria-current","page");
+  if(radio)initRadio();
+}
+window.addEventListener("hashchange",route);
+renderNews();route();
+</script>
+</body>
+</html>

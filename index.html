@@ -3,197 +3,191 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#F4F4F2" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#111315" media="(prefers-color-scheme: dark)">
 <title>Newsdesk</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bai+Jamjuree:wght@500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;600&family=Anuphan:wght@500;600&family=IBM+Plex+Sans+Thai:wght@300;400;500;600&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/hls.js/1.5.13/hls.min.js"></script>
 <style>
-/* Newsdesk: ตัวเลือกหน้าเป็นหน้าปัดจูนสถานี, รายชื่อแบบ directory, สถานีโปรดเป็นการ์ด, แถบเล่นวิทยุมีไฟ ON AIR */
+/* Newsdesk: editorial grid — พื้นเทาอ่อน เส้นบาง สีส้มเป็นสีเน้นสีเดียว */
 :root{
-  --bg:#eef1ef; --paper:#ffffff; --ink:#1b2430; --muted:#5b6672; --line:#d5dbd8;
-  --accent:#0f6b66; --accent-soft:#ddedea; --onair:#d62839; --dial:#1b2430; --dial-ink:#e6ecea;
-  --display:"Bai Jamjuree","IBM Plex Sans Thai",system-ui,sans-serif;
-  --body:"IBM Plex Sans Thai","Bai Jamjuree",system-ui,sans-serif;
+  --bg:#F4F4F2; --paper:#FFFFFF; --ink:#16181B; --ink2:#3A3E44; --muted:#5C6168; --line:#DCDCD8; --line2:#E6E6E2;
+  --accent:#F25C05; --bar:rgba(255,255,255,.92);
+  --wide:"Unbounded","Anuphan",system-ui,sans-serif;
+  --display:"Anuphan","IBM Plex Sans Thai",system-ui,sans-serif;
+  --body:"IBM Plex Sans Thai","Anuphan",system-ui,sans-serif;
   color-scheme:light;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --bg:#131a20; --paper:#1b242c; --ink:#e6ecea; --muted:#94a3aa; --line:#2b3740;
-  --accent:#5cc4b8; --accent-soft:#183330; --onair:#ff5a67; --dial:#0c1116; --dial-ink:#e6ecea; color-scheme:dark}}
+  --bg:#111315; --paper:#1A1D20; --ink:#EDEDEA; --ink2:#C9CCCE; --muted:#9BA1A7; --line:#2E3237; --line2:#24282C;
+  --accent:#FF6E1F; --bar:rgba(17,19,21,.92); color-scheme:dark}}
 :root[data-theme="dark"]{
-  --bg:#131a20; --paper:#1b242c; --ink:#e6ecea; --muted:#94a3aa; --line:#2b3740;
-  --accent:#5cc4b8; --accent-soft:#183330; --onair:#ff5a67; --dial:#0c1116; --dial-ink:#e6ecea; color-scheme:dark}
+  --bg:#111315; --paper:#1A1D20; --ink:#EDEDEA; --ink2:#C9CCCE; --muted:#9BA1A7; --line:#2E3237; --line2:#24282C;
+  --accent:#FF6E1F; --bar:rgba(17,19,21,.92); color-scheme:dark}
 *{box-sizing:border-box}
 html,body{margin:0}
-body{background:var(--bg);color:var(--ink);font:16px/1.55 var(--body);-webkit-font-smoothing:antialiased}
-body.playing{padding-bottom:104px}
-.wrap{max-width:1160px;margin:0 auto;padding-inline:max(20px,env(safe-area-inset-left,0px)) max(20px,env(safe-area-inset-right,0px))}
-main.wrap{padding-block:0 72px}
+body{background:var(--bg);color:var(--ink);font:16px/1.6 var(--body);-webkit-font-smoothing:antialiased}
+body.playing{padding-bottom:88px}
+.wrap{max-width:1400px;margin:0 auto;padding-inline:max(24px,env(safe-area-inset-left,0px)) max(24px,env(safe-area-inset-right,0px))}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+input,select,button{font:inherit;color:inherit}
+svg.i{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.kick{display:flex;align-items:center;gap:10px;font-size:14px;font-weight:500;letter-spacing:.04em;color:var(--ink)}
+.kick::before{content:"";width:12px;height:12px;background:var(--accent);flex:none}
 
-/* ---------- Masthead: แถบหัวสำนักข่าว + ลูกโลกหมุน ---------- */
-.masthead{position:relative;overflow:hidden;color:#e6ecea;margin-bottom:26px;padding-top:env(safe-area-inset-top,0px);
-  background:
-    radial-gradient(520px 260px at 12% 55%,rgba(92,196,184,.22),transparent 70%),
-    radial-gradient(700px 300px at 100% 0%,rgba(214,40,57,.14),transparent 70%),
-    linear-gradient(160deg,#0a1520 0%,#0f2530 55%,#0b1a24 100%);
-  border-bottom:3px solid var(--onair)}
-.masthead::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.07;
-  background:
-    repeating-linear-gradient(0deg,#fff 0 1px,transparent 1px 34px),
-    repeating-linear-gradient(90deg,#fff 0 1px,transparent 1px 34px);
-  -webkit-mask:linear-gradient(90deg,#000,transparent 70%);mask:linear-gradient(90deg,#000,transparent 70%)}
-.mast{position:relative;padding-block:26px 24px;display:flex;justify-content:space-between;align-items:center;gap:20px 32px;flex-wrap:wrap}
-.brand{display:flex;align-items:center;gap:18px;min-width:0}
-.globe{width:136px;height:136px;margin-block:-8px;flex:none;overflow:visible;filter:drop-shadow(0 0 22px rgba(92,196,184,.45))}
-.globe .grid-l{fill:none;stroke:#b6f0e7;stroke-width:1.2;opacity:.7}
-.globe .mer{transform-box:fill-box;transform-origin:center;animation:mer 14s linear infinite}
-.globe .orbit{fill:none;stroke:rgba(255,255,255,.28);stroke-width:1;stroke-dasharray:2 4}
-@keyframes mer{0%{transform:scaleX(1)}12.5%{transform:scaleX(.924)}25%{transform:scaleX(.707)}37.5%{transform:scaleX(.383)}50%{transform:scaleX(0)}
-  62.5%{transform:scaleX(-.383)}75%{transform:scaleX(-.707)}87.5%{transform:scaleX(-.924)}100%{transform:scaleX(-1)}}
-.kicker{display:flex;align-items:center;gap:8px;font:600 12px/1 var(--display);letter-spacing:.02em;color:#9fb0b6}
-.kicker b{color:#fff;background:var(--onair);padding:4px 7px 3px;border-radius:4px;letter-spacing:.1em;display:inline-flex;align-items:center;gap:6px}
-.kicker b::before{content:"";width:6px;height:6px;border-radius:50%;background:#fff;animation:blink 1.4s ease-in-out infinite}
-@keyframes blink{50%{opacity:.25}}
-.brand h1{font:700 clamp(36px,6vw,58px)/1 var(--display);margin:8px 0 0;letter-spacing:-.03em;color:#fff}
-.brand h1 span{color:#5cc4b8}
-.date{font-size:14px;color:#9fb0b6;margin-top:8px;display:flex;gap:8px;flex-wrap:wrap}
-.date #clock{color:#e6ecea;font:600 14px var(--display);font-variant-numeric:tabular-nums}
+/* ---------- Top bar ---------- */
+.top{border-bottom:1px solid var(--line);padding-top:env(safe-area-inset-top,0px)}
+.top .wrap{display:flex;align-items:center;flex-wrap:wrap;gap:12px 32px;padding-block:16px}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink)}
+.brand svg{width:30px;height:30px}
+.brand b{font:600 21px/1 var(--wide);letter-spacing:.02em}
+.tabs{margin-left:auto;display:flex;align-items:center;gap:4px 28px;font-size:18px}
+.tabs a{position:relative;display:flex;align-items:center;gap:7px;padding:8px 0;color:var(--ink2);text-decoration:none}
+.tabs a:hover{color:var(--ink)}
+.tabs a[aria-current="page"]{color:var(--ink);font-weight:500}
+.tabs a[aria-current="page"]::after{content:"";position:absolute;left:0;right:0;bottom:0;height:2px;background:var(--accent)}
+.badge{font:600 11px/1 var(--wide);border:1px solid var(--line);border-radius:999px;padding:3px 7px}
+.badge:empty{display:none}
+.tabs a[aria-current="page"] .badge{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.clock{font:500 14px/1 var(--wide);font-variant-numeric:tabular-nums;color:var(--ink)}
+@media (max-width:640px){
+  .top .wrap{gap:4px 16px;padding-block:14px 4px}
+  .clock{margin-left:auto}
+  .tabs{order:3;width:100%;margin-left:0;justify-content:space-between;gap:0;border-top:1px solid var(--line2);padding-top:4px}
+  .tabs a{flex:1;justify-content:center;padding:10px 0}
+}
 
-/* หน้าปัดจูน */
-.tuner{--i:0;position:relative;display:grid;grid-template-columns:repeat(3,1fr);width:min(100%,420px);
-  background:rgba(0,0,0,.28);color:var(--dial-ink);border-radius:14px;padding:24px 6px 8px;isolation:isolate;
-  border:1px solid rgba(255,255,255,.14);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
-.tuner::before{content:"";position:absolute;inset:8px 14px auto;height:10px;z-index:-1;opacity:.55;
-  background:
-    repeating-linear-gradient(90deg,currentColor 0 1px,transparent 1px 8px) bottom/100% 5px no-repeat,
-    repeating-linear-gradient(90deg,currentColor 0 1.5px,transparent 1.5px 40px) bottom/100% 10px no-repeat}
-.needle{position:absolute;top:5px;height:18px;width:2px;border-radius:2px;background:var(--onair);
-  left:calc(6px + (100% - 12px) * (var(--i) * 2 + 1) / 6);transform:translateX(-1px);transition:left .38s cubic-bezier(.3,.7,.2,1);z-index:-1;
-  box-shadow:0 0 10px var(--onair)}
-.tuner a{position:relative;text-align:center;padding:6px 4px 4px;text-decoration:none;color:inherit;opacity:.6;
-  font:600 17px/1.2 var(--display);border-radius:8px;transition:opacity .2s}
-.tuner a:hover{opacity:.9}
-.tuner a[aria-current="page"]{opacity:1}
-.tuner a[aria-current="page"]::after{content:"";display:block;width:18px;height:2px;margin:5px auto 0;border-radius:2px;background:var(--onair)}
-.tuner a::after{content:"";display:block;height:2px;margin-top:5px}
-.tuner a:focus-visible{outline:2px solid var(--dial-ink);outline-offset:-2px}
-@media (max-width:640px){.mast{padding-block:18px 18px}.tuner{width:100%}.globe{width:84px;height:84px;margin-block:0}.brand{gap:14px}.kicker{font-size:11px}}
+/* ---------- Hero ---------- */
+.hero{position:relative;overflow:hidden;border-bottom:1px solid var(--line)}
+.hero-grid{position:absolute;inset:0;max-width:1400px;margin:0 auto;padding-inline:24px;display:grid;grid-template-columns:repeat(4,1fr);pointer-events:none}
+.hero-grid i{border-left:1px solid var(--line2)}
+.hero-grid i:last-child{border-right:1px solid var(--line2)}
+.wave{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;color:var(--accent)}
+.wave path{fill:none;stroke:currentColor;stroke-width:1.1;vector-effect:non-scaling-stroke}
+.hero .wrap{position:relative;display:flex;flex-direction:column;gap:22px;padding-block:56px 48px}
+.hero h1{margin:0;font:500 clamp(52px,9.5vw,132px)/.95 var(--wide);letter-spacing:-.02em}
+.lead{margin:0;max-width:34em;font:300 clamp(18px,1.7vw,23px)/1.6 var(--body);color:var(--ink2)}
+.cta{align-self:flex-start;display:inline-flex;align-items:center;gap:10px;padding:8px 0;font-size:14px;font-weight:500;letter-spacing:.06em;color:var(--ink);text-decoration:none}
+.cta::before{content:"";width:12px;height:12px;background:var(--accent)}
+.cta svg{color:var(--accent);transition:transform .2s}
+.cta:hover svg{transform:translateX(4px)}
+@media (max-width:640px){.hero-grid{grid-template-columns:repeat(2,1fr)}.hero .wrap{padding-block:40px 36px;gap:18px}.wave{opacity:.55}}
 
 /* ---------- Controls ---------- */
-input,select,button{font:inherit;color:inherit}
-.field{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:11px 14px;min-width:0;width:100%;font-size:16px}
-.field[type="search"]{padding-left:42px;background:var(--paper) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' fill='none' stroke='%238a959e' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='8' cy='8' r='6'/%3E%3Cpath d='m12.5 12.5 4 4'/%3E%3C/svg%3E") 14px 50%/18px no-repeat}
-.field:focus{border-color:var(--accent)}
-:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+main.wrap{padding-block:40px 96px}
 .tools{display:grid;grid-template-columns:2fr 1fr 1fr;gap:10px}
-#newsView .tools,#tvView .tools{grid-template-columns:minmax(0,440px)}
+#newsView .tools,#tvView .tools{grid-template-columns:minmax(0,520px)}
+.field{width:100%;min-width:0;background:var(--paper);border:1px solid var(--line);border-radius:999px;padding:12px 20px;font-size:16px;appearance:none;-webkit-appearance:none}
+select.field{padding-right:40px;background:var(--paper) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none' stroke='%238a9096' stroke-width='1.8' stroke-linecap='round'%3E%3Cpath d='m1 1.5 5 5 5-5'/%3E%3C/svg%3E") right 18px center/12px no-repeat}
+.field[type="search"]{padding-left:48px;background:var(--paper) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' fill='none' stroke='%238a9096' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='8' cy='8' r='6'/%3E%3Cpath d='m12.5 12.5 4 4'/%3E%3C/svg%3E") 20px 50%/18px no-repeat}
+.field:hover{border-color:var(--muted)}
+.field:focus{border-color:var(--ink);outline:none}
 @media (max-width:640px){.tools{grid-template-columns:1fr 1fr}.tools .field:first-child{grid-column:1/-1}}
-.chips{display:flex;gap:6px;overflow-x:auto;padding-block:14px 2px;scrollbar-width:none;margin-inline:-2px;padding-inline:2px}
+.chips{display:flex;gap:8px;overflow-x:auto;padding-block:16px 2px;scrollbar-width:none;margin-inline:-2px;padding-inline:2px}
 .chips::-webkit-scrollbar{display:none}
-.chip{white-space:nowrap;border:1px solid var(--line);background:var(--paper);border-radius:8px;padding:6px 14px;cursor:pointer;font-size:14.5px;color:var(--muted)}
-.chip:hover{color:var(--ink);border-color:var(--muted)}
-.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
-.note{font-size:14.5px;color:var(--muted);margin:12px 0 0;max-width:60ch}
-.status{font-size:14px;color:var(--muted);margin-top:14px}
+.chip{white-space:nowrap;min-height:40px;border:1px solid var(--ink);background:transparent;border-radius:999px;padding:6px 18px;cursor:pointer;font-size:14px;font-weight:500;letter-spacing:.03em;color:var(--ink)}
+.chip:hover{background:var(--paper)}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.note{font-size:15px;color:var(--muted);margin:14px 0 0;max-width:62ch}
+.status{font-size:14px;color:var(--muted);margin-top:16px}
 
-/* ---------- Sections: directory rows ---------- */
-section{margin-top:34px}
-h2{font:700 21px/1.2 var(--display);margin:0 0 4px;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;letter-spacing:-.01em}
-h2 small{font:400 14px var(--body);color:var(--muted)}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));column-gap:28px;border-top:2px solid var(--ink)}
-.tile{position:relative;display:flex;gap:14px;align-items:center;padding:12px 40px 12px 4px;border-bottom:1px solid var(--line);
-  text-decoration:none;color:inherit;min-width:0;cursor:pointer;text-align:left;width:100%;background:none}
-.tile:hover .name{color:var(--accent)}
-.tile:hover .logo{border-color:var(--accent)}
-.logo{width:40px;height:40px;border-radius:9px;flex:none;background:#fff;border:1px solid var(--line);display:grid;place-items:center;overflow:hidden;
-  font:700 14px var(--display);color:#1b2430;transition:border-color .15s}
+/* ---------- Sections ---------- */
+section{margin-top:56px}
+#radioView section{margin-top:24px}
+.sechead{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap;margin-top:12px;padding-bottom:16px;border-bottom:1px solid var(--ink)}
+h2{margin:0;font:600 clamp(28px,3vw,40px)/1.15 var(--display);letter-spacing:-.02em}
+.count{font:500 14px/1 var(--wide);color:var(--muted);padding-bottom:6px}
+
+/* แบบสารบัญ */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));column-gap:32px}
+.row{position:relative;display:flex;align-items:center;gap:14px;padding:14px 50px 14px 0;border-bottom:1px solid var(--line);text-decoration:none;color:inherit;min-width:0}
+.row:hover .name{text-decoration:underline;text-underline-offset:3px}
+.row:hover .logo{border-color:var(--ink)}
+.logo{width:44px;height:44px;flex:none;border-radius:8px;background:#fff;border:1px solid var(--line);display:grid;place-items:center;overflow:hidden;
+  font:600 13px var(--wide);color:#16181B;transition:border-color .2s}
 .logo img{width:26px;height:26px;object-fit:contain}
 .meta{min-width:0;flex:1}
-.name{font-weight:600;line-height:1.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:color .15s}
-.desc{font-size:13.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.pin{position:absolute;top:50%;right:2px;transform:translateY(-50%);background:none;border:0;cursor:pointer;color:var(--muted);font-size:18px;
-  width:34px;height:34px;border-radius:8px;opacity:.45;line-height:1}
-.pin:hover{opacity:1;background:var(--accent-soft)}
-.pin.y{opacity:1;color:#d99a1e}
+.name{font-weight:500;font-size:17px;line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.desc{font-size:14px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pin{position:absolute;top:50%;right:0;transform:translateY(-50%);width:44px;height:44px;border:0;border-radius:8px;background:none;cursor:pointer;color:var(--muted);display:grid;place-items:center}
+.pin:hover{color:var(--ink);background:var(--line2)}
+.pin.y{color:var(--accent)}
+.pin.y svg{fill:currentColor}
 
-/* สถานี/รายการโปรด: การ์ดใหญ่กว่า เหมือนปุ่ม preset */
-.grid.presets{border-top:0;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-top:10px}
-.presets .tile{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:14px 40px 14px 14px}
-.presets .tile:hover{border-color:var(--accent)}
-.presets .logo{width:48px;height:48px;border-radius:12px}
-.presets .logo img{width:32px;height:32px}
-.presets .logo.big img{width:100%;height:100%;object-fit:cover}
-.presets .pin{top:8px;transform:none}
-.tile.on{border-color:var(--onair)!important;box-shadow:inset 3px 0 0 var(--onair)}
-.tile.on .name{color:var(--onair)}
-#radioView section{margin-top:18px}
-.empty{color:var(--muted);text-align:center;padding:48px 16px;grid-column:1/-1;border-bottom:1px solid var(--line)}
-.presets .empty{border:1px dashed var(--line);border-radius:14px}
+/* แบบการ์ด: รายการโปรด / สถานีวิทยุ */
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:20px;margin-top:24px}
+.card{position:relative;display:flex;flex-direction:column;min-height:340px;padding:18px 22px 20px;background:var(--paper);border:1px solid var(--line2);border-radius:10px;
+  text-decoration:none;color:inherit;cursor:pointer;min-width:0;transition:border-color .2s,box-shadow .2s}
+.card:hover{border-color:var(--ink);box-shadow:0 10px 30px rgba(0,0,0,.06)}
+.tag{align-self:flex-start;max-width:calc(100% - 44px);font-size:12px;font-weight:500;letter-spacing:.06em;border:1px solid var(--ink);border-radius:999px;padding:3px 14px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card .pin{top:10px;right:10px;transform:none}
+.mark{flex:1;display:grid;place-items:center;padding:24px 0}
+.card .logo{width:88px;height:88px;border-radius:20px;border-color:var(--line2);font-size:24px}
+.card .logo img{width:56px;height:56px}
+.card .logo.big img{width:100%;height:100%;object-fit:cover}
+.card .name{font:600 21px/1.3 var(--display);white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.card .desc{font-size:15px;white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;min-height:3.2em}
+.go{align-self:flex-end;margin-top:10px;display:flex;align-items:center;gap:6px;font-size:13px;font-weight:500;color:var(--ink)}
+.cards.sm .card{min-height:280px}
+.cards.sm .mark{padding:16px 0}
+.card.on{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.card.on .tag{background:var(--accent);border-color:var(--accent);color:#16181B}
+.card.on .go svg{color:var(--accent)}
+.empty{grid-column:1/-1;text-align:center;color:var(--muted);padding:56px 16px;border:1px dashed var(--line);border-radius:10px;margin:24px 0 0}
 
 /* ---------- Player bar ---------- */
-.bar{position:fixed;left:0;right:0;bottom:0;background:var(--dial);color:var(--dial-ink);padding-block:12px calc(12px + env(safe-area-inset-bottom,0px));z-index:5}
-.bar .wrap{display:flex;align-items:center;gap:16px}
-.play{width:48px;height:48px;border-radius:50%;border:2px solid var(--dial-ink);background:transparent;color:var(--dial-ink);font-size:16px;cursor:pointer;flex:none}
-.play:hover{background:var(--dial-ink);color:var(--dial)}
-.play:focus-visible{outline-color:var(--dial-ink)}
-.lamp{flex:none;font:700 12px/1 var(--display);letter-spacing:.08em;padding:6px 8px;border-radius:6px;border:1.5px solid currentColor;color:#5d6a72;transition:all .25s}
-body.onair .lamp{color:#fff;background:var(--onair);border-color:var(--onair);box-shadow:0 0 14px var(--onair)}
+.bar{position:fixed;left:0;right:0;bottom:0;z-index:5;background:var(--bar);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);
+  border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px)}
+.bar .wrap{display:flex;align-items:center;gap:18px;padding-block:12px}
+.play{width:48px;height:48px;flex:none;border-radius:50%;border:0;background:var(--ink);color:var(--bg);cursor:pointer;display:grid;place-items:center}
+.play svg{width:16px;height:16px;fill:currentColor}
+.play:hover{background:var(--accent);color:#fff}
+.lamp{flex:none;display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:500;letter-spacing:.1em;color:var(--muted)}
+.lamp::before{content:"";width:10px;height:10px;background:var(--line)}
+body.onair .lamp{color:var(--ink)}
+body.onair .lamp::before{background:var(--accent);animation:blink 1.4s ease-in-out infinite}
+@keyframes blink{50%{opacity:.3}}
 .now{min-width:0;flex:1}
 .now .name{font:600 17px/1.3 var(--display)}
-.now .desc{color:#9fb0b6}
 .meter{display:flex;gap:3px;align-items:flex-end;height:22px;flex:none}
-.meter i{width:4px;background:var(--dial-ink);opacity:.3;height:4px;border-radius:1px}
+.meter i{width:4px;height:4px;background:var(--ink);opacity:.25}
 body.onair .meter i{opacity:.85;animation:lvl 1s ease-in-out infinite alternate}
 .meter i:nth-child(2){animation-delay:-.3s!important}.meter i:nth-child(3){animation-delay:-.6s!important}.meter i:nth-child(4){animation-delay:-.15s!important}.meter i:nth-child(5){animation-delay:-.45s!important}
 @keyframes lvl{0%{height:4px}100%{height:22px}}
-.vol{width:120px;accent-color:var(--dial-ink)}
-@media (max-width:560px){.vol,.meter{display:none}.lamp{display:none}}
-@media (prefers-reduced-motion:reduce){.needle,.tuner a,.lamp,.logo,.name{transition:none}body.onair .meter i{animation:none;height:14px}
-  .globe .mer,.kicker b::before{animation:none}.globe animateMotion{display:none}}
+.vol{width:130px;accent-color:var(--ink)}
+@media (max-width:560px){.vol,.meter,.lamp{display:none}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}body.onair .meter i,body.onair .lamp::before{animation:none}body.onair .meter i{height:14px}}
 </style>
 </head>
 <body>
-<header class="masthead">
-<div class="wrap mast">
-  <div class="brand">
-    <svg class="globe" viewBox="-130 -130 260 260" aria-hidden="true">
-      <defs>
-        <radialGradient id="gSea" cx="38%" cy="32%" r="75%">
-          <stop offset="0" stop-color="#2fa79a"/><stop offset=".55" stop-color="#0f5c63"/><stop offset="1" stop-color="#062a33"/>
-        </radialGradient>
-        <radialGradient id="gShine" cx="32%" cy="26%" r="45%">
-          <stop offset="0" stop-color="#fff" stop-opacity=".45"/><stop offset="1" stop-color="#fff" stop-opacity="0"/>
-        </radialGradient>
-        <clipPath id="gClip"><circle r="90"/></clipPath>
-      </defs>
-      <ellipse class="orbit" rx="124" ry="34" transform="rotate(-18)"/>
-      <circle r="90" fill="url(#gSea)"/>
-      <g clip-path="url(#gClip)" id="gLines">
-        <ellipse class="grid-l" rx="90" ry="16"/>
-        <ellipse class="grid-l" cy="-45" rx="78" ry="14"/><ellipse class="grid-l" cy="45" rx="78" ry="14"/>
-        <ellipse class="grid-l" cy="-78" rx="45" ry="8"/><ellipse class="grid-l" cy="78" rx="45" ry="8"/>
-      </g>
-      <circle r="90" fill="url(#gShine)"/>
-      <circle r="90" fill="none" stroke="#9fe3d9" stroke-opacity=".6" stroke-width="1.5"/>
-      <path d="M-124 0A124 34 0 0 0 124 0" class="orbit" transform="rotate(-18)" style="stroke-dasharray:none;stroke:rgba(255,255,255,.35)"/>
-      <g transform="rotate(-18)"><circle r="4.5" fill="#ff5a67" style="filter:drop-shadow(0 0 4px #ff5a67)">
-        <animateMotion dur="9s" repeatCount="indefinite" path="M124 0A124 34 0 1 1 -124 0A124 34 0 1 1 124 0"/>
-      </circle></g>
-    </svg>
-    <div>
-      <div class="kicker"><b>Live</b>ข่าว · ทีวี · วิทยุ ทั่วโลก</div>
-      <h1>News<span>desk</span></h1>
-      <div class="date"><span id="today"></span><span aria-hidden="true">·</span><span id="clock"></span></div>
-    </div>
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="#news" aria-label="Newsdesk หน้าแรก">
+      <svg viewBox="-16 -16 32 32" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="2.2"><circle r="13.5"/><ellipse rx="6" ry="13.5"/><path d="M-13.5 0h27"/></g><circle cx="10.5" cy="-10.5" r="4.5" fill="var(--accent)"/></svg>
+      <b>NEWSDESK</b>
+    </a>
+    <nav class="tabs" aria-label="สลับหน้า">
+      <a href="#news" id="tabNews">ข่าว <span class="badge" id="cNews"></span></a>
+      <a href="#tv" id="tabTv">ทีวี <span class="badge" id="cTv"></span></a>
+      <a href="#radio" id="tabRadio">วิทยุ</a>
+    </nav>
+    <span class="clock" id="clock"></span>
   </div>
-  <nav class="tuner" id="tuner" aria-label="สลับหน้า">
-    <span class="needle" aria-hidden="true"></span>
-    <a href="#news" id="tabNews">ข่าว</a>
-    <a href="#tv" id="tabTv">ทีวี</a>
-    <a href="#radio" id="tabRadio">วิทยุ</a>
-  </nav>
-</div>
 </header>
+
+<div class="hero">
+  <div class="hero-grid" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+  <svg class="wave" id="wave" viewBox="0 0 1440 520" preserveAspectRatio="xMidYMid slice" aria-hidden="true"></svg>
+  <div class="wrap">
+    <div class="kick" id="today"></div>
+    <h1>Newsdesk</h1>
+    <p class="lead" id="lead"></p>
+    <a class="cta" id="cta" href="#radio"><span id="ctaText">ฟังวิทยุสด</span><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+  </div>
+</div>
 
 <main class="wrap">
   <div id="newsView">
@@ -204,7 +198,6 @@ body.onair .meter i{opacity:.85;animation:lvl 1s ease-in-out infinite alternate}
 
   <div id="tvView" hidden>
     <div class="tools"><input class="field" id="tq" type="search" placeholder="ค้นหาช่อง เช่น Thai PBS, ช่อง 3, DW" aria-label="ค้นหาช่องทีวี"></div>
-    <p class="note">ดูสดฟรีจากเว็บทางการของแต่ละช่อง กดชื่อช่องเพื่อเปิดหน้าถ่ายทอดสดในแท็บใหม่</p>
     <div class="chips" id="tchips"></div>
     <div id="tout"></div>
   </div>
@@ -222,13 +215,13 @@ body.onair .meter i{opacity:.85;animation:lvl 1s ease-in-out infinite alternate}
     </form>
     <div class="chips" id="rchips"></div>
     <div class="status" id="rstatus"></div>
-    <section><div class="grid presets" id="rgrid"></div></section>
+    <section><div class="cards sm" id="rgrid"></div></section>
   </div>
 </main>
 
 <div class="bar" id="bar" hidden>
   <div class="wrap">
-    <button class="play" id="play" aria-label="เล่น/หยุด">▶</button>
+    <button class="play" id="play" aria-label="เล่น"><svg viewBox="0 0 24 24" aria-hidden="true"><path id="playIcon" d="M7 4.5v15l13-7.5z"/></svg></button>
     <span class="lamp" aria-hidden="true">ON AIR</span>
     <div class="now"><div class="name" id="nowName"></div><div class="desc" id="nowInfo"></div></div>
     <span class="meter" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
@@ -242,13 +235,23 @@ const $=id=>document.getElementById(id);
 const store={get(k,d){try{return JSON.parse(localStorage.getItem(k))??d}catch{return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{}}};
 const esc=t=>String(t??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const mono=n=>esc(String(n).replace(/^The\s+/i,"").trim().slice(0,2).toUpperCase());
+const STAR=`<svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1 6.2L12 17.3 6.5 20.2l1-6.2L3 9.6l6.2-.9z"/></svg>`;
+const ARROW=`<svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"/></svg>`;
+const PLAY_I="M7 4.5v15l13-7.5z", PAUSE_I="M6 4h4v16H6zM14 4h4v16h-4z";
 function logoFail(img){ // favicon: Google → DuckDuckGo → อักษรย่อ
   if(img.dataset.h&&!img.dataset.t){img.dataset.t=1;img.src=`https://icons.duckduckgo.com/ip3/${img.dataset.h}.ico`}
   else img.parentNode.textContent=img.dataset.m;
 }
+
+/* ---------- หัวเว็บ: วันที่ นาฬิกา เส้นสาย ---------- */
 $("today").textContent=new Date().toLocaleDateString("th-TH",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
-(function clock(){const d=new Date();$("clock").textContent=d.toLocaleTimeString("th-TH",{hour:"2-digit",minute:"2-digit"})+" น.";setTimeout(clock,(60-d.getSeconds())*1000)})();
-$("gLines").insertAdjacentHTML("beforeend",Array.from({length:6},(_,i)=>`<ellipse class="grid-l mer" rx="90" ry="90" style="animation-delay:${(-i*14/6).toFixed(2)}s"/>`).join(""));
+(function clock(){const d=new Date();$("clock").textContent=d.toLocaleTimeString("th-TH",{hour:"2-digit",minute:"2-digit"});setTimeout(clock,(60-d.getSeconds())*1000)})();
+(function wave(){
+  let d=[];
+  for(let i=0;i<26;i++)d.push(`M${250+i*7} -20C${330+i*10} 300 ${720+i*6} ${470+i*4} 1500 ${430+i*6}`);
+  for(let i=0;i<18;i++)d.push(`M${1060+i*4} -20C${1090+i*3} ${110+i*5} ${1200+i*4} ${200+i*4} 1500 ${250+i*9}`);
+  $("wave").innerHTML=d.map(p=>`<path d="${p}"/>`).join("");
+})();
 
 /* ================= ข่าว: สำนักข่าวที่อ่านได้ฟรี ================= */
 const GROUPS=[
@@ -351,30 +354,38 @@ const TV_GROUPS=[
 ];
 
 /* ตัวสร้างหน้ารวมลิงก์ (ใช้ร่วมกันทั้งข่าวและทีวี) */
-function launcher({groups,key,chipsEl,outEl,qEl,noun}){
+function launcher({groups,key,chipsEl,outEl,qEl,noun,countEl}){
   const items=groups.flatMap(([g,,list])=>list.map(([name,url,desc])=>({name,url,desc,g})));
+  $(countEl).textContent=items.length;
   let pins=store.get(key+"_pins",[]), filter=store.get(key+"_filter","all");
   if(!["all","pins",...groups.map(g=>g[0])].includes(filter))filter="all";
-  const tile=o=>{
-    const pinned=pins.includes(o.name), h=new URL(o.url).hostname;
-    return `<a class="tile" href="${esc(o.url)}" target="_blank" rel="noopener">
-      <span class="logo"><img src="https://www.google.com/s2/favicons?domain=${h}&sz=128" alt="" loading="lazy" data-h="${h}" data-m="${mono(o.name)}" onerror="logoFail(this)"></span>
-      <span class="meta"><div class="name">${esc(o.name)}</div><div class="desc">${esc(o.desc.replace(/ · /g,", "))}</div></span>
-      <button class="pin" type="button" data-pin="${esc(o.name)}" aria-label="${pinned?"เอาออกจากรายการโปรด":"เพิ่มในรายการโปรด"} ${esc(o.name)}">${pinned?"★":"☆"}</button></a>`.replace('class="pin"',`class="pin ${pinned?"y":""}"`);
-  };
+  const fav=o=>new URL(o.url).hostname;
+  const img=(h,o)=>`<img src="https://www.google.com/s2/favicons?domain=${h}&sz=128" alt="" loading="lazy" data-h="${h}" data-m="${mono(o.name)}" onerror="logoFail(this)">`;
+  const pinBtn=o=>{const p=pins.includes(o.name);
+    return `<button class="pin ${p?"y":""}" type="button" data-pin="${esc(o.name)}" aria-pressed="${p}" aria-label="${p?"เอาออกจากรายการโปรด":"เพิ่มในรายการโปรด"} ${esc(o.name)}">${STAR}</button>`};
+  const desc=o=>esc(o.desc.replace(/ · /g,", "));
+  const row=o=>`<a class="row" href="${esc(o.url)}" target="_blank" rel="noopener">
+      <span class="logo">${img(fav(o),o)}</span>
+      <span class="meta"><div class="name">${esc(o.name)}</div><div class="desc">${desc(o)}</div></span>${pinBtn(o)}</a>`;
+  const card=o=>`<a class="card" href="${esc(o.url)}" target="_blank" rel="noopener">
+      <span class="tag">${esc(o.g)}</span>${pinBtn(o)}
+      <span class="mark"><span class="logo">${img(fav(o),o)}</span></span>
+      <div class="name">${esc(o.name)}</div><div class="desc">${desc(o)}</div>
+      <span class="go">${ARROW}</span></a>`;
+  const head=(kick,title,n)=>`<div class="kick">${kick}</div><div class="sechead"><h2>${title}</h2><span class="count">${n}</span></div>`;
   function render(){
-    const opts=[["all","ทั้งหมด"],["pins",`★ โปรด (${pins.length})`],...groups.map(g=>[g[0],g[0]])];
+    const opts=[["all","ทั้งหมด"],["pins",`โปรด (${pins.length})`],...groups.map(g=>[g[0],g[0]])];
     $(chipsEl).innerHTML=opts.map(([v,l])=>`<button class="chip" type="button" data-f="${v}" aria-pressed="${filter===v}">${l}</button>`).join("");
     const q=$(qEl).value.trim().toLowerCase();
     const match=o=>!q||(o.name+" "+o.desc+" "+o.url).toLowerCase().includes(q);
     let html="";
     const pinned=items.filter(o=>pins.includes(o.name)&&match(o));
-    if((filter==="all"||filter==="pins")&&pinned.length)html+=`<section><h2>รายการโปรด <small>${pinned.length} รายการ</small></h2><div class="grid presets">${pinned.map(tile).join("")}</div></section>`;
-    if(filter==="pins"&&!pinned.length)html+=`<p class="empty">ยังไม่มี${noun}โปรด กด ☆ ท้ายชื่อเพื่อเก็บไว้ด้านบน</p>`;
+    if((filter==="all"||filter==="pins")&&pinned.length)html+=`<section>${head("รายการโปรด",`${noun}ที่คุณติดตาม`,pinned.length)}<div class="cards">${pinned.map(card).join("")}</div></section>`;
+    if(filter==="pins"&&!pinned.length)html+=`<p class="empty">ยังไม่มี${noun}โปรด กดรูปดาวท้ายชื่อเพื่อปักหมุดไว้ด้านบน</p>`;
     if(filter!=="pins")groups.forEach(([g,sub])=>{
       if(filter!=="all"&&filter!==g)return;
       const list=items.filter(o=>o.g===g&&match(o));
-      if(list.length)html+=`<section><h2>${g} <small>${sub} (${list.length})</small></h2><div class="grid">${list.map(tile).join("")}</div></section>`;
+      if(list.length)html+=`<section>${head(sub,g,list.length)}<div class="grid">${list.map(row).join("")}</div></section>`;
     });
     $(outEl).innerHTML=html||`<p class="empty">ไม่พบ${noun}ที่ตรงกับ “${esc(q)}”</p>`;
   }
@@ -384,8 +395,8 @@ function launcher({groups,key,chipsEl,outEl,qEl,noun}){
   $(qEl).addEventListener("input",render);
   render();
 }
-launcher({groups:GROUPS,key:"nd",chipsEl:"nchips",outEl:"nout",qEl:"nq",noun:"สำนักข่าว"});
-launcher({groups:TV_GROUPS,key:"tv",chipsEl:"tchips",outEl:"tout",qEl:"tq",noun:"ช่อง"});
+launcher({groups:GROUPS,key:"nd",chipsEl:"nchips",outEl:"nout",qEl:"nq",noun:"สำนักข่าว",countEl:"cNews"});
+launcher({groups:TV_GROUPS,key:"tv",chipsEl:"tchips",outEl:"tout",qEl:"tq",noun:"ช่อง",countEl:"cTv"});
 
 /* ================= วิทยุ: Radio Browser API ================= */
 const SERVERS=["de1","de2","fi1","nl1","at1"].map(s=>`https://${s}.api.radio-browser.info`);
@@ -404,7 +415,7 @@ async function api(path){
   throw new Error("เชื่อมต่อฐานข้อมูลวิทยุไม่ได้ ตรวจสอบอินเทอร์เน็ตแล้วลองใหม่");
 }
 function renderRChips(){
-  const b=[[`fav`,`★ สถานีโปรด (${Object.keys(favs).length})`,rview==="fav"],...TAGS.map(([t,l])=>[t,l,rview==="all"&&rtag===t])];
+  const b=[[`fav`,`สถานีโปรด (${Object.keys(favs).length})`,rview==="fav"],...TAGS.map(([t,l])=>[t,l,rview==="all"&&rtag===t])];
   $("rchips").innerHTML=b.map(([v,l,on])=>`<button class="chip rchip" type="button" data-t="${v}" aria-pressed="${on}">${l}</button>`).join("");
 }
 async function loadCountries(){
@@ -432,19 +443,21 @@ async function searchRadio(){
 function showFavs(){
   rview="fav";renderRChips();
   const list=Object.values(favs);$("rstatus").textContent=`สถานีโปรด ${list.length} สถานี`;
-  renderStations(list,"ยังไม่มีสถานีโปรด กด ☆ ที่มุมการ์ดเพื่อบันทึก");
+  renderStations(list,"ยังไม่มีสถานีโปรด กดรูปดาวที่มุมการ์ดเพื่อบันทึก");
 }
 function renderStations(list,emptyMsg="ไม่พบสถานี ลองเปลี่ยนคำค้นหรือประเทศ"){
   lastList=list;
   if(!list.length){$("rgrid").innerHTML=`<div class="empty">${emptyMsg}</div>`;return}
   $("rgrid").innerHTML=list.map((s,i)=>{
     const tags=(s.tags||"").split(",").filter(Boolean).slice(0,2).join(", ");
-    const fav=!!favs[s.stationuuid];
+    const fav=!!favs[s.stationuuid], on=current&&current.stationuuid===s.stationuuid;
     const logo=/^https?:\/\//.test(s.favicon||"")?`<img src="${esc(s.favicon)}" alt="" loading="lazy" data-m="${mono(s.name)}" onerror="logoFail(this)">`:mono(s.name);
-    return `<div class="tile ${current&&current.stationuuid===s.stationuuid?"on":""}" role="button" tabindex="0" data-i="${i}">
-      <span class="logo big">${logo}</span>
-      <span class="meta"><div class="name">${esc(s.name.trim())}</div><div class="desc">${esc([s.country,tags,s.bitrate?s.bitrate+" kbps":""].filter(Boolean).join(", "))}</div></span>
-      <button class="pin rpin ${fav?"y":""}" type="button" data-i="${i}" aria-label="${fav?"เอาออกจากสถานีโปรด":"เพิ่มในสถานีโปรด"}">${fav?"★":"☆"}</button></div>`;
+    return `<div class="card ${on?"on":""}" role="button" tabindex="0" data-i="${i}" aria-label="ฟัง ${esc(s.name.trim())}">
+      <span class="tag">${esc(s.country||"วิทยุออนไลน์")}</span>
+      <button class="pin rpin ${fav?"y":""}" type="button" data-i="${i}" aria-pressed="${fav}" aria-label="${fav?"เอาออกจากสถานีโปรด":"เพิ่มในสถานีโปรด"}">${STAR}</button>
+      <span class="mark"><span class="logo big">${logo}</span></span>
+      <div class="name">${esc(s.name.trim())}</div><div class="desc">${esc([tags,s.bitrate?s.bitrate+" kbps":""].filter(Boolean).join(", ")||"สถานีวิทยุ")}</div>
+      <span class="go">${on?"กำลังเล่น":"ฟัง"} <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5v15l13-7.5z" fill="currentColor"/></svg></span></div>`;
   }).join("");
 }
 function playStation(s){
@@ -455,13 +468,14 @@ function playStation(s){
   audio.play().catch(()=>setInfo("สถานีนี้เล่นไม่ได้ในขณะนี้ ลองสถานีอื่น"));
   $("bar").hidden=false;document.body.classList.add("playing");
   $("nowName").textContent=s.name.trim();setInfo("กำลังเชื่อมต่อ…");
-  document.querySelectorAll("#rgrid .tile").forEach(el=>el.classList.toggle("on",lastList[el.dataset.i]?.stationuuid===s.stationuuid));
+  renderStations(lastList,rview==="fav"?"ยังไม่มีสถานีโปรด กดรูปดาวที่มุมการ์ดเพื่อบันทึก":undefined);
   api("/json/url/"+s.stationuuid).catch(()=>{});
   if("mediaSession" in navigator)navigator.mediaSession.metadata=new MediaMetadata({title:s.name,artist:s.country||"",artwork:s.favicon?[{src:s.favicon}]:[]});
 }
 function setInfo(t,live){$("nowInfo").textContent=t;document.body.classList.toggle("onair",!!live)}
-audio.addEventListener("playing",()=>{$("play").textContent="❚❚";setInfo([current.country,current.bitrate?current.bitrate+" kbps":""].filter(Boolean).join(", ")||"กำลังเล่น",true)});
-audio.addEventListener("pause",()=>{$("play").textContent="▶";if(current)setInfo("หยุดชั่วคราว")});
+function setPlayIcon(playing){$("playIcon").setAttribute("d",playing?PAUSE_I:PLAY_I);$("play").setAttribute("aria-label",playing?"หยุดชั่วคราว":"เล่น")}
+audio.addEventListener("playing",()=>{setPlayIcon(true);setInfo([current.country,current.bitrate?current.bitrate+" kbps":""].filter(Boolean).join(", ")||"กำลังเล่น",true)});
+audio.addEventListener("pause",()=>{setPlayIcon(false);if(current)setInfo("หยุดชั่วคราว")});
 audio.addEventListener("waiting",()=>setInfo("กำลังบัฟเฟอร์…"));
 audio.addEventListener("error",()=>{if(current)setInfo("สตรีมขัดข้อง ลองสถานีอื่น")});
 $("play").onclick=()=>audio.paused?playStation(current):audio.pause();
@@ -469,7 +483,7 @@ $("vol").oninput=e=>{audio.volume=e.target.value;store.set("sw_vol",e.target.val
 audio.volume=$("vol").value=store.get("sw_vol",0.8);
 $("rf").onsubmit=e=>{e.preventDefault();rtag="";searchRadio()};
 $("rcountry").onchange=searchRadio;$("rsort").onchange=searchRadio;
-$("rgrid").addEventListener("keydown",e=>{const t=e.target.closest(".tile");if(t&&(e.key==="Enter"||e.key===" ")){e.preventDefault();playStation(lastList[t.dataset.i])}});
+$("rgrid").addEventListener("keydown",e=>{if(e.target.closest(".pin"))return;const t=e.target.closest(".card");if(t&&(e.key==="Enter"||e.key===" ")){e.preventDefault();playStation(lastList[t.dataset.i])}});
 async function initRadio(){if(radioReady)return;radioReady=true;renderRChips();await loadCountries();searchRadio()}
 
 /* ================= คลิกรวม + สลับหน้า ================= */
@@ -481,14 +495,19 @@ document.addEventListener("click",e=>{
     store.set("sw_favs",favs);rview==="fav"?showFavs():(renderRChips(),renderStations(lastList));return}
   const rc=e.target.closest(".rchip");
   if(rc){if(rc.dataset.t==="fav")showFavs();else{rtag=rc.dataset.t;searchRadio()}return}
-  const rt=e.target.closest("#rgrid .tile");
+  const rt=e.target.closest("#rgrid .card");
   if(rt)playStation(lastList[rt.dataset.i]);
 });
+const LEADS={
+  news:["รวมสำนักข่าวที่อ่านได้ฟรี ทั้งไทย ต่างประเทศ เอเชีย ธุรกิจ เทคโนโลยี และการแพทย์ ปักหมุดแหล่งข่าวที่ติดตามประจำไว้ด้านบนได้","ฟังวิทยุสด","#radio"],
+  tv:["ช่องทีวีไทยและช่องข่าวต่างประเทศที่ดูสดได้ฟรีจากเว็บทางการของแต่ละช่อง กดชื่อช่องเพื่อเปิดหน้าถ่ายทอดสดในแท็บใหม่","ฟังวิทยุสด","#radio"],
+  radio:["วิทยุออนไลน์กว่า 50,000 สถานีทั่วโลกจาก Radio Browser ค้นหาตามชื่อ ประเทศ หรือแนวเพลง แล้วกดการ์ดเพื่อฟังได้ทันที","ดูทีวีสด","#tv"],
+};
 function route(){
   const v=["#tv","#radio"].includes(location.hash)?location.hash.slice(1):"news";
   $("newsView").hidden=v!=="news";$("tvView").hidden=v!=="tv";$("radioView").hidden=v!=="radio";
   [["tabNews","news"],["tabTv","tv"],["tabRadio","radio"]].forEach(([id,k])=>k===v?$(id).setAttribute("aria-current","page"):$(id).removeAttribute("aria-current"));
-  $("tuner").style.setProperty("--i",["news","tv","radio"].indexOf(v));
+  const [lead,cta,href]=LEADS[v];$("lead").textContent=lead;$("ctaText").textContent=cta;$("cta").href=href;
   if(v==="radio")initRadio();
 }
 window.addEventListener("hashchange",route);

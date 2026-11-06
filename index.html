@@ -3,79 +3,135 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Newsdesk Radio</title>
+<title>Newsdesk</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anuphan:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,700&family=JetBrains+Mono:wght@500&display=swap">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bai+Jamjuree:wght@500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/hls.js/1.5.13/hls.min.js"></script>
 <style>
-/* Layout: masthead with News/Radio switch, filter chips, grouped tiles; radio player bar pinned to bottom across both tabs */
+/* Newsdesk: ตัวเลือกหน้าเป็นหน้าปัดจูนสถานี, รายชื่อแบบ directory, สถานีโปรดเป็นการ์ด, แถบเล่นวิทยุมีไฟ ON AIR */
 :root{
-  --bg:#f4f5f7; --paper:#ffffff; --ink:#15171c; --muted:#5f6675; --line:#dfe2e8;
-  --accent:#0b5cad; --accent-soft:#e3eefa; --live:#1f8a4c;
-  --display:"Fraunces",Georgia,serif; --body:"Anuphan",system-ui,sans-serif; --mono:"JetBrains Mono",ui-monospace,monospace;
+  --bg:#eef1ef; --paper:#ffffff; --ink:#1b2430; --muted:#5b6672; --line:#d5dbd8;
+  --accent:#0f6b66; --accent-soft:#ddedea; --onair:#d62839; --dial:#1b2430; --dial-ink:#e6ecea;
+  --display:"Bai Jamjuree","IBM Plex Sans Thai",system-ui,sans-serif;
+  --body:"IBM Plex Sans Thai","Bai Jamjuree",system-ui,sans-serif;
   color-scheme:light;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --bg:#0f1115; --paper:#181b21; --ink:#e9ecf2; --muted:#98a0b0; --line:#2a2f38;
-  --accent:#6aaaf0; --accent-soft:#16263a; --live:#4fd08a; color-scheme:dark}}
+  --bg:#131a20; --paper:#1b242c; --ink:#e6ecea; --muted:#94a3aa; --line:#2b3740;
+  --accent:#5cc4b8; --accent-soft:#183330; --onair:#ff5a67; --dial:#0c1116; --dial-ink:#e6ecea; color-scheme:dark}}
 :root[data-theme="dark"]{
-  --bg:#0f1115; --paper:#181b21; --ink:#e9ecf2; --muted:#98a0b0; --line:#2a2f38;
-  --accent:#6aaaf0; --accent-soft:#16263a; --live:#4fd08a; color-scheme:dark}
+  --bg:#131a20; --paper:#1b242c; --ink:#e6ecea; --muted:#94a3aa; --line:#2b3740;
+  --accent:#5cc4b8; --accent-soft:#183330; --onair:#ff5a67; --dial:#0c1116; --dial-ink:#e6ecea; color-scheme:dark}
 *{box-sizing:border-box}
 html,body{margin:0}
-body{background:var(--bg);color:var(--ink);font:16px/1.5 var(--body)}
-body.playing{padding-bottom:96px}
-.wrap{max-width:1180px;margin:0 auto;padding-inline:max(16px,env(safe-area-inset-left,0px)) max(16px,env(safe-area-inset-right,0px))}
-main.wrap{padding-block:0 60px}
-.mast{border-bottom:3px double var(--line);padding-block:22px 14px;display:flex;justify-content:space-between;align-items:end;gap:16px;flex-wrap:wrap}
-h1{font:700 clamp(30px,5vw,48px)/1 var(--display);margin:0;letter-spacing:-.02em}
-.date{font:500 12px var(--mono);color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
-.switch{display:flex;background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:3px}
-.switch a{padding:7px 16px;border-radius:7px;text-decoration:none;color:var(--muted);font-weight:600}
-.switch a[aria-current="page"]{background:var(--accent);color:#fff}
+:root{padding-top:env(safe-area-inset-top,0px)}
+body{background:var(--bg);color:var(--ink);font:16px/1.55 var(--body);-webkit-font-smoothing:antialiased}
+body.playing{padding-bottom:104px}
+.wrap{max-width:1160px;margin:0 auto;padding-inline:max(20px,env(safe-area-inset-left,0px)) max(20px,env(safe-area-inset-right,0px))}
+main.wrap{padding-block:0 72px}
+
+/* ---------- Masthead ---------- */
+.mast{padding-block:28px 22px;display:flex;justify-content:space-between;align-items:center;gap:20px 32px;flex-wrap:wrap}
+.brand h1{font:700 clamp(34px,5.5vw,52px)/1 var(--display);margin:0;letter-spacing:-.025em}
+.date{font-size:14px;color:var(--muted);margin-top:6px}
+
+/* หน้าปัดจูน: จุดเด่นเดียวของหน้า */
+.tuner{--i:0;position:relative;display:grid;grid-template-columns:repeat(3,1fr);width:min(100%,420px);
+  background:var(--dial);color:var(--dial-ink);border-radius:14px;padding:24px 6px 8px;isolation:isolate;border:1px solid var(--line)}
+.tuner::before{content:"";position:absolute;inset:8px 14px auto;height:10px;z-index:-1;opacity:.55;
+  background:
+    repeating-linear-gradient(90deg,currentColor 0 1px,transparent 1px 8px) bottom/100% 5px no-repeat,
+    repeating-linear-gradient(90deg,currentColor 0 1.5px,transparent 1.5px 40px) bottom/100% 10px no-repeat}
+.needle{position:absolute;top:5px;height:18px;width:2px;border-radius:2px;background:var(--onair);
+  left:calc(6px + (100% - 12px) * (var(--i) * 2 + 1) / 6);transform:translateX(-1px);transition:left .38s cubic-bezier(.3,.7,.2,1);z-index:-1;
+  box-shadow:0 0 10px var(--onair)}
+.tuner a{position:relative;text-align:center;padding:6px 4px 4px;text-decoration:none;color:inherit;opacity:.6;
+  font:600 17px/1.2 var(--display);border-radius:8px;transition:opacity .2s}
+.tuner a:hover{opacity:.9}
+.tuner a[aria-current="page"]{opacity:1}
+.tuner a[aria-current="page"]::after{content:"";display:block;width:18px;height:2px;margin:5px auto 0;border-radius:2px;background:var(--onair)}
+.tuner a::after{content:"";display:block;height:2px;margin-top:5px}
+.tuner a:focus-visible{outline:2px solid var(--dial-ink);outline-offset:-2px}
+@media (max-width:640px){.mast{padding-block:20px 16px}.tuner{width:100%}}
+
+/* ---------- Controls ---------- */
 input,select,button{font:inherit;color:inherit}
-.field{background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:9px 12px;min-width:0;width:100%}
+.field{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:11px 14px;min-width:0;width:100%;font-size:16px}
+.field[type="search"]{padding-left:42px;background:var(--paper) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' fill='none' stroke='%238a959e' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='8' cy='8' r='6'/%3E%3Cpath d='m12.5 12.5 4 4'/%3E%3C/svg%3E") 14px 50%/18px no-repeat}
+.field:focus{border-color:var(--accent)}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.tools{display:grid;grid-template-columns:2fr 1fr 1fr;gap:10px;margin-top:16px}
-#newsView .tools,#tvView .tools{grid-template-columns:minmax(0,420px)}
+.tools{display:grid;grid-template-columns:2fr 1fr 1fr;gap:10px}
+#newsView .tools,#tvView .tools{grid-template-columns:minmax(0,440px)}
 @media (max-width:640px){.tools{grid-template-columns:1fr 1fr}.tools .field:first-child{grid-column:1/-1}}
-.chips{display:flex;gap:8px;overflow-x:auto;padding-block:12px 4px;scrollbar-width:thin}
-.chip{white-space:nowrap;border:1px solid var(--line);background:transparent;border-radius:999px;padding:5px 13px;cursor:pointer;font-size:14px}
+.chips{display:flex;gap:6px;overflow-x:auto;padding-block:14px 2px;scrollbar-width:none;margin-inline:-2px;padding-inline:2px}
+.chips::-webkit-scrollbar{display:none}
+.chip{white-space:nowrap;border:1px solid var(--line);background:var(--paper);border-radius:8px;padding:6px 14px;cursor:pointer;font-size:14.5px;color:var(--muted)}
+.chip:hover{color:var(--ink);border-color:var(--muted)}
 .chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
-section{margin-top:22px}
-h2{font:600 13px var(--mono);color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin:0 0 10px;display:flex;gap:8px;align-items:baseline}
-h2 small{font:400 12px var(--body);letter-spacing:0;text-transform:none}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px}
-.tile{position:relative;display:flex;gap:12px;align-items:center;background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:12px 34px 12px 12px;text-decoration:none;color:inherit;min-width:0;cursor:pointer;transition:border-color .15s,transform .15s;text-align:left;width:100%}
-.tile:hover{border-color:var(--accent);transform:translateY(-1px)}
-.tile.on{border-color:var(--accent);background:var(--accent-soft)}
-@media (prefers-reduced-motion:reduce){.tile{transition:none}.tile:hover{transform:none}}
-.logo{width:44px;height:44px;border-radius:10px;flex:none;background:#fff;border:1px solid var(--line);display:grid;place-items:center;overflow:hidden;font:700 15px var(--body);color:#15171c}
-.logo img{width:30px;height:30px;object-fit:contain}
-.logo.big img{width:100%;height:100%;object-fit:cover}
+.note{font-size:14.5px;color:var(--muted);margin:12px 0 0;max-width:60ch}
+.status{font-size:14px;color:var(--muted);margin-top:14px}
+
+/* ---------- Sections: directory rows ---------- */
+section{margin-top:34px}
+h2{font:700 21px/1.2 var(--display);margin:0 0 4px;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;letter-spacing:-.01em}
+h2 small{font:400 14px var(--body);color:var(--muted)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));column-gap:28px;border-top:2px solid var(--ink)}
+.tile{position:relative;display:flex;gap:14px;align-items:center;padding:12px 40px 12px 4px;border-bottom:1px solid var(--line);
+  text-decoration:none;color:inherit;min-width:0;cursor:pointer;text-align:left;width:100%;background:none}
+.tile:hover .name{color:var(--accent)}
+.tile:hover .logo{border-color:var(--accent)}
+.logo{width:40px;height:40px;border-radius:9px;flex:none;background:#fff;border:1px solid var(--line);display:grid;place-items:center;overflow:hidden;
+  font:700 14px var(--display);color:#1b2430;transition:border-color .15s}
+.logo img{width:26px;height:26px;object-fit:contain}
 .meta{min-width:0;flex:1}
-.name{font-weight:600;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.desc{font-size:12.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.pin{position:absolute;top:4px;right:4px;background:none;border:0;cursor:pointer;color:var(--muted);font-size:16px;padding:4px 6px;border-radius:6px;opacity:.55}
-.pin:hover,.pin.y{opacity:1}.pin.y{color:var(--accent)}
-.status{font:500 12px var(--mono);color:var(--muted);margin-top:14px}
-.empty{color:var(--muted);text-align:center;padding:40px 0;grid-column:1/-1}
-.bar{position:fixed;left:0;right:0;bottom:0;background:var(--paper);border-top:1px solid var(--line);padding-block:10px calc(10px + env(safe-area-inset-bottom,0px));z-index:5}
-.bar .wrap{display:flex;align-items:center;gap:14px}
-.play{width:46px;height:46px;border-radius:50%;border:0;background:var(--accent);color:#fff;font-size:17px;cursor:pointer;flex:none}
+.name{font-weight:600;line-height:1.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:color .15s}
+.desc{font-size:13.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pin{position:absolute;top:50%;right:2px;transform:translateY(-50%);background:none;border:0;cursor:pointer;color:var(--muted);font-size:18px;
+  width:34px;height:34px;border-radius:8px;opacity:.45;line-height:1}
+.pin:hover{opacity:1;background:var(--accent-soft)}
+.pin.y{opacity:1;color:#d99a1e}
+
+/* สถานี/รายการโปรด: การ์ดใหญ่กว่า เหมือนปุ่ม preset */
+.grid.presets{border-top:0;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-top:10px}
+.presets .tile{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:14px 40px 14px 14px}
+.presets .tile:hover{border-color:var(--accent)}
+.presets .logo{width:48px;height:48px;border-radius:12px}
+.presets .logo img{width:32px;height:32px}
+.presets .logo.big img{width:100%;height:100%;object-fit:cover}
+.presets .pin{top:8px;transform:none}
+.tile.on{border-color:var(--onair)!important;box-shadow:inset 3px 0 0 var(--onair)}
+.tile.on .name{color:var(--onair)}
+#radioView section{margin-top:18px}
+.empty{color:var(--muted);text-align:center;padding:48px 16px;grid-column:1/-1;border-bottom:1px solid var(--line)}
+.presets .empty{border:1px dashed var(--line);border-radius:14px}
+
+/* ---------- Player bar ---------- */
+.bar{position:fixed;left:0;right:0;bottom:0;background:var(--dial);color:var(--dial-ink);padding-block:12px calc(12px + env(safe-area-inset-bottom,0px));z-index:5}
+.bar .wrap{display:flex;align-items:center;gap:16px}
+.play{width:48px;height:48px;border-radius:50%;border:2px solid var(--dial-ink);background:transparent;color:var(--dial-ink);font-size:16px;cursor:pointer;flex:none}
+.play:hover{background:var(--dial-ink);color:var(--dial)}
+.play:focus-visible{outline-color:var(--dial-ink)}
+.lamp{flex:none;font:700 12px/1 var(--display);letter-spacing:.08em;padding:6px 8px;border-radius:6px;border:1.5px solid currentColor;color:#5d6a72;transition:all .25s}
+body.onair .lamp{color:#fff;background:var(--onair);border-color:var(--onair);box-shadow:0 0 14px var(--onair)}
 .now{min-width:0;flex:1}
-.live{color:var(--live);font:500 11px var(--mono);letter-spacing:.06em}
-.live::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:currentColor;margin-right:6px;vertical-align:1px;animation:pulse 1.4s infinite}
-@keyframes pulse{50%{opacity:.25}}
-@media (prefers-reduced-motion:reduce){.live::before{animation:none}}
-.vol{width:120px}
-@media (max-width:520px){.vol{display:none}}
+.now .name{font:600 17px/1.3 var(--display)}
+.now .desc{color:#9fb0b6}
+.meter{display:flex;gap:3px;align-items:flex-end;height:22px;flex:none}
+.meter i{width:4px;background:var(--dial-ink);opacity:.3;height:4px;border-radius:1px}
+body.onair .meter i{opacity:.85;animation:lvl 1s ease-in-out infinite alternate}
+.meter i:nth-child(2){animation-delay:-.3s!important}.meter i:nth-child(3){animation-delay:-.6s!important}.meter i:nth-child(4){animation-delay:-.15s!important}.meter i:nth-child(5){animation-delay:-.45s!important}
+@keyframes lvl{0%{height:4px}100%{height:22px}}
+.vol{width:120px;accent-color:var(--dial-ink)}
+@media (max-width:560px){.vol,.meter{display:none}.lamp{display:none}}
+@media (prefers-reduced-motion:reduce){.needle,.tuner a,.lamp,.logo,.name{transition:none}body.onair .meter i{animation:none;height:14px}}
 </style>
 </head>
 <body>
 <header class="wrap mast">
-  <div><div class="date" id="today"></div><h1>Newsdesk</h1></div>
-  <nav class="switch" aria-label="สลับหน้า">
+  <div class="brand"><h1>Newsdesk</h1><div class="date" id="today"></div></div>
+  <nav class="tuner" id="tuner" aria-label="สลับหน้า">
+    <span class="needle" aria-hidden="true"></span>
     <a href="#news" id="tabNews">ข่าว</a>
     <a href="#tv" id="tabTv">ทีวี</a>
     <a href="#radio" id="tabRadio">วิทยุ</a>
@@ -83,25 +139,22 @@ h2 small{font:400 12px var(--body);letter-spacing:0;text-transform:none}
 </header>
 
 <main class="wrap">
-  <!-- ข่าว -->
   <div id="newsView">
     <div class="tools"><input class="field" id="nq" type="search" placeholder="ค้นหาสำนักข่าว เช่น BBC, ไทยรัฐ, WHO" aria-label="ค้นหาสำนักข่าว"></div>
     <div class="chips" id="nchips"></div>
     <div id="nout"></div>
   </div>
 
-  <!-- ทีวี -->
   <div id="tvView" hidden>
     <div class="tools"><input class="field" id="tq" type="search" placeholder="ค้นหาช่อง เช่น Thai PBS, ช่อง 3, DW" aria-label="ค้นหาช่องทีวี"></div>
-    <p class="status">ช่องทีวีที่ดูสดได้ฟรีจากเว็บทางการของแต่ละช่อง กดแล้วเปิดหน้าถ่ายทอดสด</p>
+    <p class="note">ดูสดฟรีจากเว็บทางการของแต่ละช่อง กดชื่อช่องเพื่อเปิดหน้าถ่ายทอดสดในแท็บใหม่</p>
     <div class="chips" id="tchips"></div>
     <div id="tout"></div>
   </div>
 
-  <!-- วิทยุ -->
   <div id="radioView" hidden>
     <form class="tools" id="rf">
-      <input class="field" id="rq" type="search" placeholder="ค้นหาสถานี แล้วกด Enter เช่น BBC, Jazz, FM 91">
+      <input class="field" id="rq" type="search" placeholder="ค้นหาสถานี แล้วกด Enter เช่น BBC, Jazz, FM 91" aria-label="ค้นหาสถานีวิทยุ">
       <select class="field" id="rcountry" aria-label="ประเทศ"><option value="">ทุกประเทศ</option></select>
       <select class="field" id="rsort" aria-label="เรียงตาม">
         <option value="votes">ยอดนิยม</option>
@@ -112,14 +165,16 @@ h2 small{font:400 12px var(--body);letter-spacing:0;text-transform:none}
     </form>
     <div class="chips" id="rchips"></div>
     <div class="status" id="rstatus"></div>
-    <section><div class="grid" id="rgrid"></div></section>
+    <section><div class="grid presets" id="rgrid"></div></section>
   </div>
 </main>
 
 <div class="bar" id="bar" hidden>
   <div class="wrap">
     <button class="play" id="play" aria-label="เล่น/หยุด">▶</button>
+    <span class="lamp" aria-hidden="true">ON AIR</span>
     <div class="now"><div class="name" id="nowName"></div><div class="desc" id="nowInfo"></div></div>
+    <span class="meter" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
     <input class="vol" id="vol" type="range" min="0" max="1" step="0.01" value="0.8" aria-label="ระดับเสียง">
   </div>
 </div>
@@ -245,22 +300,22 @@ function launcher({groups,key,chipsEl,outEl,qEl,noun}){
     const pinned=pins.includes(o.name), h=new URL(o.url).hostname;
     return `<a class="tile" href="${esc(o.url)}" target="_blank" rel="noopener">
       <span class="logo"><img src="https://www.google.com/s2/favicons?domain=${h}&sz=128" alt="" loading="lazy" data-h="${h}" data-m="${mono(o.name)}" onerror="logoFail(this)"></span>
-      <span class="meta"><div class="name">${esc(o.name)}</div><div class="desc">${esc(o.desc)}</div></span>
-      <button class="pin" type="button" data-pin="${esc(o.name)}" aria-label="ปักหมุด ${esc(o.name)}">${pinned?"★":"☆"}</button></a>`.replace('class="pin"',`class="pin ${pinned?"y":""}"`);
+      <span class="meta"><div class="name">${esc(o.name)}</div><div class="desc">${esc(o.desc.replace(/ · /g,", "))}</div></span>
+      <button class="pin" type="button" data-pin="${esc(o.name)}" aria-label="${pinned?"เอาออกจากรายการโปรด":"เพิ่มในรายการโปรด"} ${esc(o.name)}">${pinned?"★":"☆"}</button></a>`.replace('class="pin"',`class="pin ${pinned?"y":""}"`);
   };
   function render(){
-    const opts=[["all","ทั้งหมด"],["pins",`★ ปักหมุด (${pins.length})`],...groups.map(g=>[g[0],g[0]])];
+    const opts=[["all","ทั้งหมด"],["pins",`★ โปรด (${pins.length})`],...groups.map(g=>[g[0],g[0]])];
     $(chipsEl).innerHTML=opts.map(([v,l])=>`<button class="chip" type="button" data-f="${v}" aria-pressed="${filter===v}">${l}</button>`).join("");
     const q=$(qEl).value.trim().toLowerCase();
     const match=o=>!q||(o.name+" "+o.desc+" "+o.url).toLowerCase().includes(q);
     let html="";
     const pinned=items.filter(o=>pins.includes(o.name)&&match(o));
-    if((filter==="all"||filter==="pins")&&pinned.length)html+=`<section><h2>★ ปักหมุด</h2><div class="grid">${pinned.map(tile).join("")}</div></section>`;
-    if(filter==="pins"&&!pinned.length)html+=`<p class="empty">ยังไม่มี${noun}ที่ปักหมุด กด ☆ ที่มุมการ์ดเพื่อเก็บไว้ด้านบน</p>`;
+    if((filter==="all"||filter==="pins")&&pinned.length)html+=`<section><h2>รายการโปรด <small>${pinned.length} รายการ</small></h2><div class="grid presets">${pinned.map(tile).join("")}</div></section>`;
+    if(filter==="pins"&&!pinned.length)html+=`<p class="empty">ยังไม่มี${noun}โปรด กด ☆ ท้ายชื่อเพื่อเก็บไว้ด้านบน</p>`;
     if(filter!=="pins")groups.forEach(([g,sub])=>{
       if(filter!=="all"&&filter!==g)return;
       const list=items.filter(o=>o.g===g&&match(o));
-      if(list.length)html+=`<section><h2>${g} <small>${sub} · ${list.length}</small></h2><div class="grid">${list.map(tile).join("")}</div></section>`;
+      if(list.length)html+=`<section><h2>${g} <small>${sub} (${list.length})</small></h2><div class="grid">${list.map(tile).join("")}</div></section>`;
     });
     $(outEl).innerHTML=html||`<p class="empty">ไม่พบ${noun}ที่ตรงกับ “${esc(q)}”</p>`;
   }
@@ -312,7 +367,7 @@ async function searchRadio(){
   store.set("sw_country",$("rcountry").value);
   $("rstatus").textContent="กำลังค้นหา…";
   try{const list=await api("/json/stations/search?"+p);
-    $("rstatus").textContent=`พบ ${list.length} สถานี`+(list.length===60?" · แสดง 60 อันดับแรก":"");renderStations(list)}
+    $("rstatus").textContent=`พบ ${list.length} สถานี`+(list.length===60?" แสดง 60 อันดับแรก":"");renderStations(list)}
   catch(e){$("rstatus").textContent=e.message;renderStations([])}
 }
 function showFavs(){
@@ -324,13 +379,13 @@ function renderStations(list,emptyMsg="ไม่พบสถานี ลอง�
   lastList=list;
   if(!list.length){$("rgrid").innerHTML=`<div class="empty">${emptyMsg}</div>`;return}
   $("rgrid").innerHTML=list.map((s,i)=>{
-    const tags=(s.tags||"").split(",").filter(Boolean).slice(0,2).join(" · ");
+    const tags=(s.tags||"").split(",").filter(Boolean).slice(0,2).join(", ");
     const fav=!!favs[s.stationuuid];
     const logo=/^https?:\/\//.test(s.favicon||"")?`<img src="${esc(s.favicon)}" alt="" loading="lazy" data-m="${mono(s.name)}" onerror="logoFail(this)">`:mono(s.name);
     return `<div class="tile ${current&&current.stationuuid===s.stationuuid?"on":""}" role="button" tabindex="0" data-i="${i}">
       <span class="logo big">${logo}</span>
-      <span class="meta"><div class="name">${esc(s.name.trim())}</div><div class="desc">${esc([s.country,tags,s.bitrate?s.bitrate+" kbps":""].filter(Boolean).join(" · "))}</div></span>
-      <button class="pin rpin ${fav?"y":""}" type="button" data-i="${i}" aria-label="สถานีโปรด">${fav?"★":"☆"}</button></div>`;
+      <span class="meta"><div class="name">${esc(s.name.trim())}</div><div class="desc">${esc([s.country,tags,s.bitrate?s.bitrate+" kbps":""].filter(Boolean).join(", "))}</div></span>
+      <button class="pin rpin ${fav?"y":""}" type="button" data-i="${i}" aria-label="${fav?"เอาออกจากสถานีโปรด":"เพิ่มในสถานีโปรด"}">${fav?"★":"☆"}</button></div>`;
   }).join("");
 }
 function playStation(s){
@@ -345,8 +400,8 @@ function playStation(s){
   api("/json/url/"+s.stationuuid).catch(()=>{});
   if("mediaSession" in navigator)navigator.mediaSession.metadata=new MediaMetadata({title:s.name,artist:s.country||"",artwork:s.favicon?[{src:s.favicon}]:[]});
 }
-function setInfo(t,live){$("nowInfo").textContent=t;$("nowInfo").className="desc"+(live?" live":"")}
-audio.addEventListener("playing",()=>{$("play").textContent="❚❚";setInfo("ON AIR · "+[current.country,current.bitrate?current.bitrate+" kbps":""].filter(Boolean).join(" · "),true)});
+function setInfo(t,live){$("nowInfo").textContent=t;document.body.classList.toggle("onair",!!live)}
+audio.addEventListener("playing",()=>{$("play").textContent="❚❚";setInfo([current.country,current.bitrate?current.bitrate+" kbps":""].filter(Boolean).join(", ")||"กำลังเล่น",true)});
 audio.addEventListener("pause",()=>{$("play").textContent="▶";if(current)setInfo("หยุดชั่วคราว")});
 audio.addEventListener("waiting",()=>setInfo("กำลังบัฟเฟอร์…"));
 audio.addEventListener("error",()=>{if(current)setInfo("สตรีมขัดข้อง ลองสถานีอื่น")});
@@ -374,6 +429,7 @@ function route(){
   const v=["#tv","#radio"].includes(location.hash)?location.hash.slice(1):"news";
   $("newsView").hidden=v!=="news";$("tvView").hidden=v!=="tv";$("radioView").hidden=v!=="radio";
   [["tabNews","news"],["tabTv","tv"],["tabRadio","radio"]].forEach(([id,k])=>k===v?$(id).setAttribute("aria-current","page"):$(id).removeAttribute("aria-current"));
+  $("tuner").style.setProperty("--i",["news","tv","radio"].indexOf(v));
   if(v==="radio")initRadio();
 }
 window.addEventListener("hashchange",route);

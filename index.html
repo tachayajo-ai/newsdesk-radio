@@ -25,20 +25,44 @@
   --accent:#5cc4b8; --accent-soft:#183330; --onair:#ff5a67; --dial:#0c1116; --dial-ink:#e6ecea; color-scheme:dark}
 *{box-sizing:border-box}
 html,body{margin:0}
-:root{padding-top:env(safe-area-inset-top,0px)}
 body{background:var(--bg);color:var(--ink);font:16px/1.55 var(--body);-webkit-font-smoothing:antialiased}
 body.playing{padding-bottom:104px}
 .wrap{max-width:1160px;margin:0 auto;padding-inline:max(20px,env(safe-area-inset-left,0px)) max(20px,env(safe-area-inset-right,0px))}
 main.wrap{padding-block:0 72px}
 
-/* ---------- Masthead ---------- */
-.mast{padding-block:28px 22px;display:flex;justify-content:space-between;align-items:center;gap:20px 32px;flex-wrap:wrap}
-.brand h1{font:700 clamp(34px,5.5vw,52px)/1 var(--display);margin:0;letter-spacing:-.025em}
-.date{font-size:14px;color:var(--muted);margin-top:6px}
+/* ---------- Masthead: แถบหัวสำนักข่าว + ลูกโลกหมุน ---------- */
+.masthead{position:relative;overflow:hidden;color:#e6ecea;margin-bottom:26px;padding-top:env(safe-area-inset-top,0px);
+  background:
+    radial-gradient(520px 260px at 12% 55%,rgba(92,196,184,.22),transparent 70%),
+    radial-gradient(700px 300px at 100% 0%,rgba(214,40,57,.14),transparent 70%),
+    linear-gradient(160deg,#0a1520 0%,#0f2530 55%,#0b1a24 100%);
+  border-bottom:3px solid var(--onair)}
+.masthead::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.07;
+  background:
+    repeating-linear-gradient(0deg,#fff 0 1px,transparent 1px 34px),
+    repeating-linear-gradient(90deg,#fff 0 1px,transparent 1px 34px);
+  -webkit-mask:linear-gradient(90deg,#000,transparent 70%);mask:linear-gradient(90deg,#000,transparent 70%)}
+.mast{position:relative;padding-block:26px 24px;display:flex;justify-content:space-between;align-items:center;gap:20px 32px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:18px;min-width:0}
+.globe{width:136px;height:136px;margin-block:-8px;flex:none;overflow:visible;filter:drop-shadow(0 0 22px rgba(92,196,184,.45))}
+.globe .grid-l{fill:none;stroke:#b6f0e7;stroke-width:1.2;opacity:.7}
+.globe .mer{transform-box:fill-box;transform-origin:center;animation:mer 14s linear infinite}
+.globe .orbit{fill:none;stroke:rgba(255,255,255,.28);stroke-width:1;stroke-dasharray:2 4}
+@keyframes mer{0%{transform:scaleX(1)}12.5%{transform:scaleX(.924)}25%{transform:scaleX(.707)}37.5%{transform:scaleX(.383)}50%{transform:scaleX(0)}
+  62.5%{transform:scaleX(-.383)}75%{transform:scaleX(-.707)}87.5%{transform:scaleX(-.924)}100%{transform:scaleX(-1)}}
+.kicker{display:flex;align-items:center;gap:8px;font:600 12px/1 var(--display);letter-spacing:.02em;color:#9fb0b6}
+.kicker b{color:#fff;background:var(--onair);padding:4px 7px 3px;border-radius:4px;letter-spacing:.1em;display:inline-flex;align-items:center;gap:6px}
+.kicker b::before{content:"";width:6px;height:6px;border-radius:50%;background:#fff;animation:blink 1.4s ease-in-out infinite}
+@keyframes blink{50%{opacity:.25}}
+.brand h1{font:700 clamp(36px,6vw,58px)/1 var(--display);margin:8px 0 0;letter-spacing:-.03em;color:#fff}
+.brand h1 span{color:#5cc4b8}
+.date{font-size:14px;color:#9fb0b6;margin-top:8px;display:flex;gap:8px;flex-wrap:wrap}
+.date #clock{color:#e6ecea;font:600 14px var(--display);font-variant-numeric:tabular-nums}
 
-/* หน้าปัดจูน: จุดเด่นเดียวของหน้า */
+/* หน้าปัดจูน */
 .tuner{--i:0;position:relative;display:grid;grid-template-columns:repeat(3,1fr);width:min(100%,420px);
-  background:var(--dial);color:var(--dial-ink);border-radius:14px;padding:24px 6px 8px;isolation:isolate;border:1px solid var(--line)}
+  background:rgba(0,0,0,.28);color:var(--dial-ink);border-radius:14px;padding:24px 6px 8px;isolation:isolate;
+  border:1px solid rgba(255,255,255,.14);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
 .tuner::before{content:"";position:absolute;inset:8px 14px auto;height:10px;z-index:-1;opacity:.55;
   background:
     repeating-linear-gradient(90deg,currentColor 0 1px,transparent 1px 8px) bottom/100% 5px no-repeat,
@@ -53,7 +77,7 @@ main.wrap{padding-block:0 72px}
 .tuner a[aria-current="page"]::after{content:"";display:block;width:18px;height:2px;margin:5px auto 0;border-radius:2px;background:var(--onair)}
 .tuner a::after{content:"";display:block;height:2px;margin-top:5px}
 .tuner a:focus-visible{outline:2px solid var(--dial-ink);outline-offset:-2px}
-@media (max-width:640px){.mast{padding-block:20px 16px}.tuner{width:100%}}
+@media (max-width:640px){.mast{padding-block:18px 18px}.tuner{width:100%}.globe{width:84px;height:84px;margin-block:0}.brand{gap:14px}.kicker{font-size:11px}}
 
 /* ---------- Controls ---------- */
 input,select,button{font:inherit;color:inherit}
@@ -124,18 +148,51 @@ body.onair .meter i{opacity:.85;animation:lvl 1s ease-in-out infinite alternate}
 @keyframes lvl{0%{height:4px}100%{height:22px}}
 .vol{width:120px;accent-color:var(--dial-ink)}
 @media (max-width:560px){.vol,.meter{display:none}.lamp{display:none}}
-@media (prefers-reduced-motion:reduce){.needle,.tuner a,.lamp,.logo,.name{transition:none}body.onair .meter i{animation:none;height:14px}}
+@media (prefers-reduced-motion:reduce){.needle,.tuner a,.lamp,.logo,.name{transition:none}body.onair .meter i{animation:none;height:14px}
+  .globe .mer,.kicker b::before{animation:none}.globe animateMotion{display:none}}
 </style>
 </head>
 <body>
-<header class="wrap mast">
-  <div class="brand"><h1>Newsdesk</h1><div class="date" id="today"></div></div>
+<header class="masthead">
+<div class="wrap mast">
+  <div class="brand">
+    <svg class="globe" viewBox="-130 -130 260 260" aria-hidden="true">
+      <defs>
+        <radialGradient id="gSea" cx="38%" cy="32%" r="75%">
+          <stop offset="0" stop-color="#2fa79a"/><stop offset=".55" stop-color="#0f5c63"/><stop offset="1" stop-color="#062a33"/>
+        </radialGradient>
+        <radialGradient id="gShine" cx="32%" cy="26%" r="45%">
+          <stop offset="0" stop-color="#fff" stop-opacity=".45"/><stop offset="1" stop-color="#fff" stop-opacity="0"/>
+        </radialGradient>
+        <clipPath id="gClip"><circle r="90"/></clipPath>
+      </defs>
+      <ellipse class="orbit" rx="124" ry="34" transform="rotate(-18)"/>
+      <circle r="90" fill="url(#gSea)"/>
+      <g clip-path="url(#gClip)" id="gLines">
+        <ellipse class="grid-l" rx="90" ry="16"/>
+        <ellipse class="grid-l" cy="-45" rx="78" ry="14"/><ellipse class="grid-l" cy="45" rx="78" ry="14"/>
+        <ellipse class="grid-l" cy="-78" rx="45" ry="8"/><ellipse class="grid-l" cy="78" rx="45" ry="8"/>
+      </g>
+      <circle r="90" fill="url(#gShine)"/>
+      <circle r="90" fill="none" stroke="#9fe3d9" stroke-opacity=".6" stroke-width="1.5"/>
+      <path d="M-124 0A124 34 0 0 0 124 0" class="orbit" transform="rotate(-18)" style="stroke-dasharray:none;stroke:rgba(255,255,255,.35)"/>
+      <g transform="rotate(-18)"><circle r="4.5" fill="#ff5a67" style="filter:drop-shadow(0 0 4px #ff5a67)">
+        <animateMotion dur="9s" repeatCount="indefinite" path="M124 0A124 34 0 1 1 -124 0A124 34 0 1 1 124 0"/>
+      </circle></g>
+    </svg>
+    <div>
+      <div class="kicker"><b>Live</b>ข่าว · ทีวี · วิทยุ ทั่วโลก</div>
+      <h1>News<span>desk</span></h1>
+      <div class="date"><span id="today"></span><span aria-hidden="true">·</span><span id="clock"></span></div>
+    </div>
+  </div>
   <nav class="tuner" id="tuner" aria-label="สลับหน้า">
     <span class="needle" aria-hidden="true"></span>
     <a href="#news" id="tabNews">ข่าว</a>
     <a href="#tv" id="tabTv">ทีวี</a>
     <a href="#radio" id="tabRadio">วิทยุ</a>
   </nav>
+</div>
 </header>
 
 <main class="wrap">
@@ -190,6 +247,8 @@ function logoFail(img){ // favicon: Google → DuckDuckGo → อักษรย
   else img.parentNode.textContent=img.dataset.m;
 }
 $("today").textContent=new Date().toLocaleDateString("th-TH",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
+(function clock(){const d=new Date();$("clock").textContent=d.toLocaleTimeString("th-TH",{hour:"2-digit",minute:"2-digit"})+" น.";setTimeout(clock,(60-d.getSeconds())*1000)})();
+$("gLines").insertAdjacentHTML("beforeend",Array.from({length:6},(_,i)=>`<ellipse class="grid-l mer" rx="90" ry="90" style="animation-delay:${(-i*14/6).toFixed(2)}s"/>`).join(""));
 
 /* ================= ข่าว: สำนักข่าวที่อ่านได้ฟรี ================= */
 const GROUPS=[

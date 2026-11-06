@@ -31,13 +31,13 @@ main.wrap{padding-block:0 60px}
 h1{font:700 clamp(30px,5vw,48px)/1 var(--display);margin:0;letter-spacing:-.02em}
 .date{font:500 12px var(--mono);color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
 .switch{display:flex;background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:3px}
-.switch a{padding:7px 18px;border-radius:7px;text-decoration:none;color:var(--muted);font-weight:600}
+.switch a{padding:7px 16px;border-radius:7px;text-decoration:none;color:var(--muted);font-weight:600}
 .switch a[aria-current="page"]{background:var(--accent);color:#fff}
 input,select,button{font:inherit;color:inherit}
 .field{background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:9px 12px;min-width:0;width:100%}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .tools{display:grid;grid-template-columns:2fr 1fr 1fr;gap:10px;margin-top:16px}
-#newsView .tools{grid-template-columns:minmax(0,420px)}
+#newsView .tools,#tvView .tools{grid-template-columns:minmax(0,420px)}
 @media (max-width:640px){.tools{grid-template-columns:1fr 1fr}.tools .field:first-child{grid-column:1/-1}}
 .chips{display:flex;gap:8px;overflow-x:auto;padding-block:12px 4px;scrollbar-width:thin}
 .chip{white-space:nowrap;border:1px solid var(--line);background:transparent;border-radius:999px;padding:5px 13px;cursor:pointer;font-size:14px}
@@ -77,6 +77,7 @@ h2 small{font:400 12px var(--body);letter-spacing:0;text-transform:none}
   <div><div class="date" id="today"></div><h1>Newsdesk</h1></div>
   <nav class="switch" aria-label="สลับหน้า">
     <a href="#news" id="tabNews">ข่าว</a>
+    <a href="#tv" id="tabTv">ทีวี</a>
     <a href="#radio" id="tabRadio">วิทยุ</a>
   </nav>
 </header>
@@ -87,6 +88,14 @@ h2 small{font:400 12px var(--body);letter-spacing:0;text-transform:none}
     <div class="tools"><input class="field" id="nq" type="search" placeholder="ค้นหาสำนักข่าว เช่น BBC, ไทยรัฐ, WHO" aria-label="ค้นหาสำนักข่าว"></div>
     <div class="chips" id="nchips"></div>
     <div id="nout"></div>
+  </div>
+
+  <!-- ทีวี -->
+  <div id="tvView" hidden>
+    <div class="tools"><input class="field" id="tq" type="search" placeholder="ค้นหาช่อง เช่น Thai PBS, ช่อง 3, DW" aria-label="ค้นหาช่องทีวี"></div>
+    <p class="status">ช่องทีวีที่ดูสดได้ฟรีจากเว็บทางการของแต่ละช่อง กดแล้วเปิดหน้าถ่ายทอดสด</p>
+    <div class="chips" id="tchips"></div>
+    <div id="tout"></div>
   </div>
 
   <!-- วิทยุ -->
@@ -189,34 +198,82 @@ const GROUPS=[
     ["Hfocus","https://www.hfocus.org","ข่าวระบบสุขภาพไทย"],
   ]],
 ];
-const NEWS=GROUPS.flatMap(([g,,items])=>items.map(([name,url,desc])=>({name,url,desc,g})));
-let pins=store.get("nd_pins",[]), nfilter=store.get("nd_filter","all");
-if(!["all","pins",...GROUPS.map(g=>g[0])].includes(nfilter))nfilter="all";
+/* ================= ทีวี: ช่องที่ดูสดฟรีจากเว็บทางการ ================= */
+const TV_GROUPS=[
+  ["ทีวีไทย","ช่องดิจิทัลทีวี ดูสดผ่านเว็บของช่อง",[
+    ["Thai PBS","https://www.thaipbs.or.th/live","ช่อง 3 · สื่อสาธารณะ"],
+    ["ช่อง 3","https://ch3plus.com/live","ช่อง 33 · CH3Plus"],
+    ["ช่อง 7HD","https://www.bugaboo.tv","ช่อง 35 · BUGABOO.TV"],
+    ["ONE31","https://www.one31.net/live","ช่อง 31"],
+    ["GMM25","https://www.gmm25.com","ช่อง 25"],
+    ["Workpoint TV","https://www.workpointtv.com","ช่อง 23"],
+    ["Amarin TV","https://www.amarintv.com/live","ช่อง 34"],
+    ["PPTV","https://www.pptvhd36.com/live","ช่อง 36"],
+    ["ไทยรัฐทีวี","https://www.thairath.co.th/live","ช่อง 32"],
+    ["ช่อง 8","https://www.thaich8.com","ช่อง 27"],
+    ["MCOT HD","https://www.mcot.net","ช่อง 30"],
+    ["TNN16","https://www.tnnthailand.com/live","ช่อง 16 · ข่าว"],
+    ["Nation TV","https://www.nationtv.tv/live","ช่อง 22 · ข่าว"],
+    ["TrueID TV","https://tv.trueid.net","รวมช่องดูฟรี (มีโฆษณา)"],
+  ]],
+  ["ข่าวต่างประเทศ","ช่องข่าวที่ถ่ายทอดสดฟรี 24 ชม.",[
+    ["Al Jazeera English","https://www.aljazeera.com/live","Qatar"],
+    ["DW News","https://www.dw.com/en/live-tv/channel-english","Germany"],
+    ["France 24","https://www.france24.com/en/live","France"],
+    ["NHK World","https://www3.nhk.or.jp/nhkworld/en/live/","Japan"],
+    ["Sky News","https://news.sky.com/watch-live","UK"],
+    ["ABC News Live","https://abcnews.go.com/Live","US"],
+    ["CBS News 24/7","https://www.cbsnews.com/live/","US"],
+    ["NBC News NOW","https://www.nbcnews.com/now","US"],
+    ["CNA","https://www.channelnewsasia.com/watch","Singapore"],
+    ["Euronews","https://www.euronews.com/live","Europe"],
+    ["TRT World","https://www.trtworld.com/live","Türkiye"],
+    ["CGTN","https://www.cgtn.com/tv","China"],
+  ]],
+  ["สารคดี & อื่นๆ","วิทยาศาสตร์ และแพลตฟอร์มดูฟรี",[
+    ["NASA+","https://plus.nasa.gov","อวกาศ วิทยาศาสตร์"],
+    ["YouTube Live","https://www.youtube.com/channel/UC4R8DWoMoI7CAwX8_LjQHig","ถ่ายทอดสดทุกหมวด"],
+    ["Pluto TV","https://pluto.tv","ฟรีมีโฆษณา · บางประเทศ"],
+    ["Plex Live TV","https://watch.plex.tv/live-tv","ฟรีมีโฆษณา · บางประเทศ"],
+  ]],
+];
 
-function newsTile(o){
-  const pinned=pins.includes(o.name), h=new URL(o.url).hostname;
-  return `<a class="tile" href="${esc(o.url)}" target="_blank" rel="noopener">
-    <span class="logo"><img src="https://www.google.com/s2/favicons?domain=${h}&sz=128" alt="" loading="lazy" data-h="${h}" data-m="${mono(o.name)}" onerror="logoFail(this)"></span>
-    <span class="meta"><div class="name">${esc(o.name)}</div><div class="desc">${esc(o.desc)}</div></span>
-    <button class="pin npin ${pinned?"y":""}" type="button" data-n="${esc(o.name)}" aria-label="ปักหมุด ${esc(o.name)}">${pinned?"★":"☆"}</button></a>`;
+/* ตัวสร้างหน้ารวมลิงก์ (ใช้ร่วมกันทั้งข่าวและทีวี) */
+function launcher({groups,key,chipsEl,outEl,qEl,noun}){
+  const items=groups.flatMap(([g,,list])=>list.map(([name,url,desc])=>({name,url,desc,g})));
+  let pins=store.get(key+"_pins",[]), filter=store.get(key+"_filter","all");
+  if(!["all","pins",...groups.map(g=>g[0])].includes(filter))filter="all";
+  const tile=o=>{
+    const pinned=pins.includes(o.name), h=new URL(o.url).hostname;
+    return `<a class="tile" href="${esc(o.url)}" target="_blank" rel="noopener">
+      <span class="logo"><img src="https://www.google.com/s2/favicons?domain=${h}&sz=128" alt="" loading="lazy" data-h="${h}" data-m="${mono(o.name)}" onerror="logoFail(this)"></span>
+      <span class="meta"><div class="name">${esc(o.name)}</div><div class="desc">${esc(o.desc)}</div></span>
+      <button class="pin" type="button" data-pin="${esc(o.name)}" aria-label="ปักหมุด ${esc(o.name)}">${pinned?"★":"☆"}</button></a>`.replace('class="pin"',`class="pin ${pinned?"y":""}"`);
+  };
+  function render(){
+    const opts=[["all","ทั้งหมด"],["pins",`★ ปักหมุด (${pins.length})`],...groups.map(g=>[g[0],g[0]])];
+    $(chipsEl).innerHTML=opts.map(([v,l])=>`<button class="chip" type="button" data-f="${v}" aria-pressed="${filter===v}">${l}</button>`).join("");
+    const q=$(qEl).value.trim().toLowerCase();
+    const match=o=>!q||(o.name+" "+o.desc+" "+o.url).toLowerCase().includes(q);
+    let html="";
+    const pinned=items.filter(o=>pins.includes(o.name)&&match(o));
+    if((filter==="all"||filter==="pins")&&pinned.length)html+=`<section><h2>★ ปักหมุด</h2><div class="grid">${pinned.map(tile).join("")}</div></section>`;
+    if(filter==="pins"&&!pinned.length)html+=`<p class="empty">ยังไม่มี${noun}ที่ปักหมุด กด ☆ ที่มุมการ์ดเพื่อเก็บไว้ด้านบน</p>`;
+    if(filter!=="pins")groups.forEach(([g,sub])=>{
+      if(filter!=="all"&&filter!==g)return;
+      const list=items.filter(o=>o.g===g&&match(o));
+      if(list.length)html+=`<section><h2>${g} <small>${sub} · ${list.length}</small></h2><div class="grid">${list.map(tile).join("")}</div></section>`;
+    });
+    $(outEl).innerHTML=html||`<p class="empty">ไม่พบ${noun}ที่ตรงกับ “${esc(q)}”</p>`;
+  }
+  $(chipsEl).addEventListener("click",e=>{const c=e.target.closest(".chip");if(!c)return;filter=c.dataset.f;store.set(key+"_filter",filter);render()});
+  $(outEl).addEventListener("click",e=>{const p=e.target.closest("[data-pin]");if(!p)return;e.preventDefault();e.stopPropagation();
+    const n=p.dataset.pin;pins=pins.includes(n)?pins.filter(x=>x!==n):[...pins,n];store.set(key+"_pins",pins);render()});
+  $(qEl).addEventListener("input",render);
+  render();
 }
-function renderNews(){
-  const opts=[["all","ทั้งหมด"],["pins",`★ ปักหมุด (${pins.length})`],...GROUPS.map(g=>[g[0],g[0]])];
-  $("nchips").innerHTML=opts.map(([v,l])=>`<button class="chip nchip" type="button" data-f="${v}" aria-pressed="${nfilter===v}">${l}</button>`).join("");
-  const q=$("nq").value.trim().toLowerCase();
-  const match=o=>!q||(o.name+" "+o.desc+" "+o.url).toLowerCase().includes(q);
-  let html="";
-  const pinned=NEWS.filter(o=>pins.includes(o.name)&&match(o));
-  if((nfilter==="all"||nfilter==="pins")&&pinned.length)html+=`<section><h2>★ ปักหมุด</h2><div class="grid">${pinned.map(newsTile).join("")}</div></section>`;
-  if(nfilter==="pins"&&!pinned.length)html+=`<p class="empty">ยังไม่มีสำนักข่าวที่ปักหมุด กด ☆ ที่มุมการ์ดเพื่อเก็บไว้ด้านบน</p>`;
-  if(nfilter!=="pins")GROUPS.forEach(([g,sub])=>{
-    if(nfilter!=="all"&&nfilter!==g)return;
-    const items=NEWS.filter(o=>o.g===g&&match(o));
-    if(items.length)html+=`<section><h2>${g} <small>${sub} · ${items.length}</small></h2><div class="grid">${items.map(newsTile).join("")}</div></section>`;
-  });
-  $("nout").innerHTML=html||`<p class="empty">ไม่พบสำนักข่าวที่ตรงกับ “${esc(q)}”</p>`;
-}
-$("nq").addEventListener("input",renderNews);
+launcher({groups:GROUPS,key:"nd",chipsEl:"nchips",outEl:"nout",qEl:"nq",noun:"สำนักข่าว"});
+launcher({groups:TV_GROUPS,key:"tv",chipsEl:"tchips",outEl:"tout",qEl:"tq",noun:"ช่อง"});
 
 /* ================= วิทยุ: Radio Browser API ================= */
 const SERVERS=["de1","de2","fi1","nl1","at1"].map(s=>`https://${s}.api.radio-browser.info`);
@@ -305,10 +362,6 @@ async function initRadio(){if(radioReady)return;radioReady=true;renderRChips();a
 
 /* ================= คลิกรวม + สลับหน้า ================= */
 document.addEventListener("click",e=>{
-  const np=e.target.closest(".npin");
-  if(np){e.preventDefault();e.stopPropagation();const n=np.dataset.n;pins=pins.includes(n)?pins.filter(x=>x!==n):[...pins,n];store.set("nd_pins",pins);renderNews();return}
-  const nc=e.target.closest(".nchip");
-  if(nc){nfilter=nc.dataset.f;store.set("nd_filter",nfilter);renderNews();return}
   const rp=e.target.closest(".rpin");
   if(rp){e.stopPropagation();const s=lastList[rp.dataset.i];
     if(favs[s.stationuuid])delete favs[s.stationuuid];
@@ -320,14 +373,13 @@ document.addEventListener("click",e=>{
   if(rt)playStation(lastList[rt.dataset.i]);
 });
 function route(){
-  const radio=location.hash==="#radio";
-  $("newsView").hidden=radio;$("radioView").hidden=!radio;
-  $("tabNews").toggleAttribute("aria-current",!radio);$("tabRadio").toggleAttribute("aria-current",radio);
-  if(!radio)$("tabNews").setAttribute("aria-current","page");else $("tabRadio").setAttribute("aria-current","page");
-  if(radio)initRadio();
+  const v=["#tv","#radio"].includes(location.hash)?location.hash.slice(1):"news";
+  $("newsView").hidden=v!=="news";$("tvView").hidden=v!=="tv";$("radioView").hidden=v!=="radio";
+  [["tabNews","news"],["tabTv","tv"],["tabRadio","radio"]].forEach(([id,k])=>k===v?$(id).setAttribute("aria-current","page"):$(id).removeAttribute("aria-current"));
+  if(v==="radio")initRadio();
 }
 window.addEventListener("hashchange",route);
-renderNews();route();
+route();
 </script>
 </body>
 </html>

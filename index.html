@@ -400,7 +400,7 @@ launcher({groups:TV_GROUPS,key:"tv",chipsEl:"tchips",outEl:"tout",qEl:"tq",noun:
 
 /* ================= วิทยุ: Radio Browser API ================= */
 const SERVERS=["de1","de2","fi1","nl1","at1"].map(s=>`https://${s}.api.radio-browser.info`);
-const TAGS=[["","ทั้งหมด"],["news","ข่าว"],["pop","Pop"],["jazz","Jazz"],["classical","Classical"],["rock","Rock"],["lofi","Lo-fi"],["talk","Talk"],["thai","ไทย"],["kpop","K-pop"],["ambient","Ambient"]];
+const TAGS=[["","ทั้งหมด"],["news","ข่าว"],["pop","Pop"],["jazz","Jazz"],["classical","Classical"],["rock","Rock"],["lofi","Lo-fi"],["talk","Talk"],["thai","ไทย"],["am","AM"],["kpop","K-pop"],["ambient","Ambient"]];
 let API=null, hls=null, current=null, rview="all", rtag="", radioReady=false, lastList=[];
 let favs=store.get("sw_favs",{});
 const audio=$("audio");
@@ -436,9 +436,20 @@ async function searchRadio(){
   if(rtag)p.set("tag",rtag);
   store.set("sw_country",$("rcountry").value);
   $("rstatus").textContent="กำลังค้นหา…";
-  try{const list=await api("/json/stations/search?"+p);
-    $("rstatus").textContent=`พบ ${list.length} สถานี`+(list.length===60?" แสดง 60 อันดับแรก":"");renderStations(list)}
+  try{const list=rtag==="am"?await searchAM(p):await api("/json/stations/search?"+p);
+    $("rstatus").innerHTML=esc(`พบ ${list.length} สถานี`+(list.length===60?" แสดง 60 อันดับแรก":""))+(rtag==="am"?' · สถานี AM ที่สตรีมออนไลน์ อยากฟังคลื่น AM จริงจากเครื่องรับทั่วโลก ลอง <a href="http://rx.linkfanel.net/" target="_blank" rel="noopener">KiwiSDR</a> หรือ <a href="http://websdr.org/" target="_blank" rel="noopener">WebSDR</a>':"");renderStations(list)}
   catch(e){$("rstatus").textContent=e.message;renderStations([])}
+}
+// AM: Radio Browser ติดแท็กไม่สม่ำเสมอ จึงรวมผลจากแท็ก am/mw และชื่อสถานีที่มีคำว่า AM หรือความถี่ kHz
+async function searchAM(p){
+  const q=t=>{const x=new URLSearchParams(p);x.delete("tag");Object.entries(t).forEach(([k,v])=>x.set(k,v));return api("/json/stations/search?"+x).catch(()=>[])};
+  const named=p.get("name");
+  const res=await Promise.all([q({tag:"am",tagExact:"true"}),q({tag:"mw",tagExact:"true"}),q({tag:"mediumwave",tagExact:"true"}),named?[]:q({name:"AM"})]);
+  const isAM=s=>/\bAM\b|\b\d{3,4}\s?(kHz|AM)\b/i.test(s.name||"")||/(^|,)\s*(am|mw|mediumwave)\s*(,|$)/i.test(s.tags||"");
+  const seen=new Set(),out=[];
+  res.flat().forEach(s=>{if(s&&isAM(s)&&!seen.has(s.stationuuid)){seen.add(s.stationuuid);out.push(s)}});
+  if(!out.length&&res.every(r=>!r.length))await api("/json/stats"); // ทุกคำค้นล้ม = ต่อ API ไม่ได้ ให้โยน error ตามปกติ
+  return out.slice(0,60);
 }
 function showFavs(){
   rview="fav";renderRChips();

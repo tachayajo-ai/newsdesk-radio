@@ -160,6 +160,8 @@ body.onair .meter i{opacity:.85;animation:lvl 1s ease-in-out infinite alternate}
 .vol{width:130px;accent-color:var(--ink)}
 @media (max-width:560px){.vol,.meter,.lamp{display:none}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}body.onair .meter i,body.onair .lamp::before{animation:none}body.onair .meter i{height:14px}}
+.foot{max-width:1200px;margin:48px auto 0;padding:20px 16px 120px;border-top:1px solid var(--line);color:var(--muted);font-size:13px;line-height:1.7}
+.foot a{color:inherit}
 </style>
 </head>
 <body>
@@ -218,6 +220,11 @@ body.onair .meter i{opacity:.85;animation:lvl 1s ease-in-out infinite alternate}
     <section><div class="cards sm" id="rgrid"></div></section>
   </div>
 </main>
+<footer class="foot">
+  Newsdesk เป็นหน้ารวมลิงก์ส่วนตัว ไม่มีโฆษณา ไม่เก็บข้อมูลผู้ใช้ ไม่ได้โฮสต์หรือบันทึกเนื้อหาใดๆ
+  ข่าวและทีวีเปิดไปยังเว็บไซต์ทางการของแต่ละสำนัก รายชื่อสถานีวิทยุมาจาก <a href="https://www.radio-browser.info" target="_blank" rel="noopener">Radio Browser</a> และเล่นจากสตรีมของสถานีโดยตรง
+  ชื่อและโลโก้เป็นของเจ้าของแต่ละราย หากต้องการให้นำลิงก์ใดออก แจ้งได้ที่ Issues ของ repository นี้
+</footer>
 
 <div class="bar" id="bar" hidden>
   <div class="wrap">
@@ -347,7 +354,8 @@ const TV_GROUPS=[
     ["CGTN","https://www.cgtn.com/tv","China"],
   ]],
   ["สารคดี & อื่นๆ","วิทยาศาสตร์ และแพลตฟอร์มดูฟรี",[
-    ["NASA+","https://plus.nasa.gov","อวกาศ วิทยาศาสตร์"],
+    ["NASA Live","https://www.youtube.com/@NASA/streams","อวกาศ · ถ่ายทอดสดผ่าน YouTube"],
+    ["NASA+","https://plus.nasa.gov","อวกาศ · สดเฉพาะช่วงมีภารกิจ"],
     ["YouTube Live","https://www.youtube.com/channel/UC4R8DWoMoI7CAwX8_LjQHig","ถ่ายทอดสดทุกหมวด"],
     ["Plex Live TV","https://watch.plex.tv/live-tv","ฟรีมีโฆษณา · หลายร้อยช่อง"],
   ]],
